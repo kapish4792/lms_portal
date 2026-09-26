@@ -45,6 +45,8 @@ import {
   BookOpen,
   CheckCircle2,
   Share2,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 
 type CalendarViewMode = "month" | "week" | "day" | "agenda";
@@ -107,8 +109,8 @@ export default function CalendarPage() {
 
   // Filter & Search states
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<string>("all");
-  const [filterCourse, setFilterCourse] = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("All Event Types");
+  const [filterCourse, setFilterCourse] = useState<string>("All Courses");
 
   // Modals state
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -148,8 +150,8 @@ export default function CalendarPage() {
         (e.courseTitle && e.courseTitle.toLowerCase().includes(search.toLowerCase())) ||
         (e.instructorName && e.instructorName.toLowerCase().includes(search.toLowerCase()));
 
-      const matchesType = filterType === "all" || e.type === filterType;
-      const matchesCourse = filterCourse === "all" || e.courseTitle === filterCourse;
+      const matchesType = filterType === "All Event Types" || e.type === filterType;
+      const matchesCourse = filterCourse === "All Courses" || e.courseTitle === filterCourse;
 
       return matchesSearch && matchesType && matchesCourse;
     });
@@ -405,24 +407,27 @@ export default function CalendarPage() {
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 bg-card border border-border p-4 rounded-xl shadow-xs">
-          <div className="md:col-span-5 relative">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3">
+          <div className="relative flex-1 min-w-55 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by event title, course, or instructor..."
-              className="pl-9 h-10 bg-background"
+              className="h-9 pl-9 bg-surface-base"
             />
           </div>
 
-          <div className="md:col-span-3">
-            <Select value={filterType} onValueChange={(val) => setFilterType(val || "all")}>
-              <SelectTrigger className="h-10 w-full bg-background">
+          <div className="hidden sm:block h-6 w-px bg-surface-border" />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <Select value={filterType} onValueChange={(val) => setFilterType(val || "All Event Types")}>
+              <SelectTrigger size="sm" className="w-48 bg-surface-base">
                 <SelectValue placeholder="All Event Types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Event Types</SelectItem>
+                <SelectItem value="All Event Types">All Event Types</SelectItem>
                 <SelectItem value="live_session">Live Sessions / ILT</SelectItem>
                 <SelectItem value="deadline">Course Deadlines</SelectItem>
                 <SelectItem value="assessment">Assessments & Exams</SelectItem>
@@ -430,15 +435,13 @@ export default function CalendarPage() {
                 <SelectItem value="event">Platform Events</SelectItem>
               </SelectContent>
             </Select>
-          </div>
 
-          <div className="md:col-span-4">
-            <Select value={filterCourse} onValueChange={(val) => setFilterCourse(val || "all")}>
-              <SelectTrigger className="h-10 w-full bg-background">
+            <Select value={filterCourse} onValueChange={(val) => setFilterCourse(val || "All Courses")}>
+              <SelectTrigger size="sm" className="w-48 bg-surface-base">
                 <SelectValue placeholder="All Courses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Associated Courses</SelectItem>
+                <SelectItem value="All Courses">All Courses</SelectItem>
                 {uniqueCourseTitles.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
@@ -446,6 +449,22 @@ export default function CalendarPage() {
                 ))}
               </SelectContent>
             </Select>
+
+            {(search || filterType !== "All Event Types" || filterCourse !== "All Courses") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                onClick={() => {
+                  setSearch("");
+                  setFilterType("All Event Types");
+                  setFilterCourse("All Courses");
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </Button>
+            )}
           </div>
         </div>
 

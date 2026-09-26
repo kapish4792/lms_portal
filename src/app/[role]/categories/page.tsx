@@ -28,7 +28,7 @@ import { useCategoriesStore } from "@/lib/store/categories-store";
 import type { Category } from "@/lib/store/categories-store";
 import { useCoursesStore } from "@/lib/store/courses-store";
 import { useRouter } from "next/navigation";
-import { Plus, FolderTree, MoreVertical, Search, LayoutGrid, List, Edit2, Copy, Trash2, ExternalLink } from "lucide-react";
+import { Plus, FolderTree, MoreVertical, Search, LayoutGrid, List, Edit2, Copy, Trash2, ExternalLink, X } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 
 export default function CategoriesPage() {
@@ -171,9 +171,22 @@ export default function CategoriesPage() {
         </div>
 
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
-            <Input placeholder="Search categories..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8" />
+          <div className="relative w-full sm:w-64 flex items-center">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+            <Input
+              placeholder="Search categories..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 pl-9 pr-8 bg-surface-base"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center rounded-lg border border-surface-border p-1 bg-surface-sunken">

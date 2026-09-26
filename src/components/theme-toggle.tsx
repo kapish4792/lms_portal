@@ -15,13 +15,9 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       className="text-text-secondary hover:text-text-primary"
-      suppressHydrationWarning
     >
-      {resolvedTheme === "dark" ? (
-        <Sun className="w-5 h-5" />
-      ) : (
-        <Moon className="w-5 h-5" />
-      )}
+      <Sun className="w-5 h-5 hidden dark:block" />
+      <Moon className="w-5 h-5 block dark:hidden" />
     </Button>
   );
 }

@@ -20,7 +20,7 @@ import {
 import { useCoursesStore } from "@/lib/store/courses-store";
 import { useCategoriesStore } from "@/lib/store/categories-store";
 import { useEnrollmentsStore } from "@/lib/store/enrollments-store";
-import { Search, Star, ShoppingBag, Play, Clock, Users, Tag, Filter, X, Check, BookOpen } from "lucide-react";
+import { Search, Star, ShoppingBag, Play, Clock, Users, Tag, Filter, X, Check, BookOpen, SlidersHorizontal } from "lucide-react";
 import { CourseCard } from "@/components/courses/CourseCard";
 
 export default function CatalogPage() {
@@ -32,8 +32,8 @@ export default function CatalogPage() {
   const enroll = useEnrollmentsStore((s) => s.enroll);
 
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [priceFilter, setPriceFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const [priceFilter, setPriceFilter] = useState("Any Price");
   const [sortBy, setSortBy] = useState("relevance");
 
   // Get user's enrollments to check enrollment status
@@ -65,9 +65,9 @@ export default function CatalogPage() {
         course.title.toLowerCase().includes(search.toLowerCase()) ||
         course.category.toLowerCase().includes(search.toLowerCase()) ||
         course.objectives.some((obj) => obj.toLowerCase().includes(search.toLowerCase()));
-      const matchesCategory = categoryFilter === "all" || course.category === categoryFilter;
+      const matchesCategory = categoryFilter === "All Categories" || course.category === categoryFilter;
       const price = course.price ?? 0;
-      const matchesPrice = priceFilter === "all" || (priceFilter === "free" ? price === 0 : price > 0);
+      const matchesPrice = priceFilter === "Any Price" || (priceFilter === "Free" ? price === 0 : price > 0);
       return matchesSearch && matchesCategory && matchesPrice;
     });
 
@@ -107,8 +107,8 @@ export default function CatalogPage() {
   };
 
   const activeFilters = [
-    categoryFilter !== "all" && { label: `Category: ${categoryFilter}`, value: "category" },
-    priceFilter !== "all" && { label: `Price: ${priceFilter}`, value: "price" },
+    categoryFilter !== "All Categories" && { label: `Category: ${categoryFilter}`, value: "category" },
+    priceFilter !== "Any Price" && { label: `Price: ${priceFilter}`, value: "price" },
   ].filter(Boolean) as { label: string; value: string }[];
 
   if (!user) return null;
@@ -133,15 +133,15 @@ export default function CatalogPage() {
               <Badge key={f.value} variant="secondary" className="gap-1">
                 {f.label}
                 <Button variant="ghost" size="icon" className="h-5 w-5 p-0" onClick={() => {
-                  if (f.value === "category") setCategoryFilter("all");
-                  if (f.value === "price") setPriceFilter("all");
+                  if (f.value === "category") setCategoryFilter("All Categories");
+                  if (f.value === "price") setPriceFilter("Any Price");
                 }}>
                   <X className="w-3 h-3" />
                 </Button>
               </Badge>
             ))}
             {activeFilters.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => { setCategoryFilter("all"); setPriceFilter("all"); }}>
+              <Button variant="ghost" size="sm" onClick={() => { setCategoryFilter("All Categories"); setPriceFilter("Any Price"); }}>
                 Clear all
               </Button>
             )}
@@ -149,59 +149,77 @@ export default function CatalogPage() {
         )}
 
         {/* Filters Bar */}
-        <Card className="border-surface-border shadow-card">
-          <CardContent className="p-4 space-y-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="relative w-full sm:w-72 flex-1 min-w-[200px]">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
-                <Input
-                  placeholder="Search courses, skills, categories..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
+        <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3">
+          <div className="relative flex-1 min-w-55 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+            <Input
+              placeholder="Search courses, skills, categories..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 pl-9 bg-surface-base"
+            />
+          </div>
 
-              <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? "all")}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  {categories.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="hidden sm:block h-6 w-px bg-surface-border" />
 
-              <Select value={priceFilter} onValueChange={(v) => setPriceFilter(v ?? "all")}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Price" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Any price</SelectItem>
-                  <SelectItem value="free">Free</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex items-center gap-2 flex-wrap">
+            <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? "All Categories")}>
+              <SelectTrigger size="sm" className="w-40 bg-surface-base">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Categories">All Categories</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-              <Select value={sortBy} onValueChange={(v) => setSortBy(v ?? "relevance")}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="popular">Most Popular</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="title">Title A-Z</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+            <Select value={priceFilter} onValueChange={(v) => setPriceFilter(v ?? "Any Price")}>
+              <SelectTrigger size="sm" className="w-32 bg-surface-base">
+                <SelectValue placeholder="Price" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Any Price">Any Price</SelectItem>
+                <SelectItem value="Free">Free</SelectItem>
+                <SelectItem value="Paid">Paid</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v ?? "relevance")}>
+              <SelectTrigger size="sm" className="w-36 bg-surface-base">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relevance">Relevance</SelectItem>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="popular">Most Popular</SelectItem>
+                <SelectItem value="rating">Highest Rated</SelectItem>
+                <SelectItem value="title">Title A-Z</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {(search || categoryFilter !== "All Categories" || priceFilter !== "Any Price" || sortBy !== "relevance") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                onClick={() => {
+                  setSearch("");
+                  setCategoryFilter("All Categories");
+                  setPriceFilter("Any Price");
+                  setSortBy("relevance");
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </Button>
+            )}
+          </div>
+        </div>
 
         {/* Course Grid */}
         {filtered.length === 0 ? (
@@ -210,7 +228,7 @@ export default function CatalogPage() {
               <ShoppingBag className="w-16 h-16 text-text-tertiary mx-auto mb-4" />
               <h3 className="text-lg font-medium text-text-primary mb-2">No courses found</h3>
               <p className="text-text-tertiary">
-                {search || categoryFilter !== "all" || priceFilter !== "all"
+                {search || categoryFilter !== "All Categories" || priceFilter !== "Any Price"
                   ? "Try adjusting your filters or search terms"
                   : "No published courses available in the catalog yet"}
               </p>

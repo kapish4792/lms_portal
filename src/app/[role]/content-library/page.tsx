@@ -26,6 +26,8 @@ import {
   Sparkles,
   Download,
   ArrowRight,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 
 export default function ContentLibraryPage() {
@@ -40,7 +42,7 @@ export default function ContentLibraryPage() {
   const courses = useCoursesStore((s) => s.courses);
 
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [importingId, setImportingId] = useState<string | null>(null);
 
   const categories = useMemo(() => Array.from(new Set(libraryCourses.map((c) => c.category))), [libraryCourses]);
@@ -51,7 +53,7 @@ export default function ContentLibraryPage() {
       c.title.toLowerCase().includes(search.toLowerCase()) ||
       c.description.toLowerCase().includes(search.toLowerCase()) ||
       c.skills.some((s) => s.toLowerCase().includes(search.toLowerCase()));
-    const matchesCategory = categoryFilter === "all" || c.category === categoryFilter;
+    const matchesCategory = categoryFilter === "All Categories" || c.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
@@ -149,30 +151,50 @@ export default function ContentLibraryPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+        <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3">
+          <div className="relative flex-1 min-w-55 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
             <Input
               placeholder="Search library, skills, compliance..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
+              className="h-9 pl-9 bg-surface-base"
             />
           </div>
 
-          <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? "all")}>
-            <SelectTrigger className="w-44">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="hidden sm:block h-6 w-px bg-surface-border" />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? "All Categories")}>
+              <SelectTrigger size="sm" className="w-44 bg-surface-base">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Categories">All Categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {(search || categoryFilter !== "All Categories") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                onClick={() => {
+                  setSearch("");
+                  setCategoryFilter("All Categories");
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Curated Courses Grid */}

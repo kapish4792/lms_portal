@@ -12,6 +12,7 @@ import {
 } from "@/lib/mock/dashboard-data";
 import { BookOpen } from "lucide-react";
 import type { Role } from "@/lib/mock/users";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export function AdminDashboard({ role, department }: { role: Role; department?: string }) {
   return (
@@ -95,20 +96,22 @@ export function AdminDashboard({ role, department }: { role: Role; department?: 
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-3 border-surface-border shadow-card">
-        <CardHeader>
-          <CardTitle className="text-base">Courses Progress</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center text-center py-10 gap-3">
-          <div className="w-12 h-12 rounded-full bg-surface-sunken flex items-center justify-center">
-            <BookOpen className="w-6 h-6 text-text-tertiary" />
-          </div>
-          <p className="text-text-secondary">No stats to show — Create your first course now</p>
-          <Button size="sm" render={<Link href={`/${role}/courses`} />}>
-            Go to courses
-          </Button>
-        </CardContent>
-      </Card>
+      <ScrollReveal className="lg:col-span-3">
+        <Card className="border-surface-border shadow-card">
+          <CardHeader>
+            <CardTitle className="text-base">Courses Progress</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center text-center py-10 gap-3">
+            <div className="w-12 h-12 rounded-full bg-surface-sunken flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-text-tertiary" />
+            </div>
+            <p className="text-text-secondary">No stats to show — Create your first course now</p>
+            <Button size="sm" render={<Link href={`/${role}/courses`} />}>
+              Go to courses
+            </Button>
+          </CardContent>
+        </Card>
+      </ScrollReveal>
     </div>
   );
 }

@@ -17,8 +17,27 @@ import {
 import { navItemsForRole } from "@/lib/permissions";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useOrganizationsStore } from "@/lib/store/organizations-store";
+import { useCoursesStore } from "@/lib/store/courses-store";
 import type { MockUser } from "@/lib/mock/users";
-import { LogOut, HelpCircle, User, Settings, PanelLeftClose, PanelRightClose, Menu, X } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  LogOut,
+  HelpCircle,
+  User,
+  Settings,
+  PanelLeftClose,
+  PanelRightClose,
+  Menu,
+  X,
+  Home,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((prev: T) => T)) => void] {
@@ -58,6 +77,7 @@ export function AppShell({
   const pathname = usePathname();
   const logout = useAuthStore((s) => s.logout);
   const organizations = useOrganizationsStore((s) => s.organizations);
+  const allCourses = useCoursesStore((s) => s.courses);
   const userOrg = user?.org;
   const userRole = user?.role;
   const myOrg = useMemo(() => (userOrg ? organizations.find((o) => o.name === userOrg) : undefined), [organizations, userOrg]);
@@ -71,6 +91,77 @@ export function AppShell({
   );
   const navItems = useMemo(() => orgScopedNav.filter((item) => item.id !== "help-center"), [orgScopedNav]);
   const helpItem = useMemo(() => orgScopedNav.find((item) => item.id === "help-center"), [orgScopedNav]);
+
+  // Generate dynamic breadcrumbs based on current pathname & role route
+  const breadcrumbItems = useMemo(() => {
+    if (!pathname || !user) return [];
+    const segments = pathname.split("/").filter(Boolean);
+    // skip the role segment (index 0)
+    const pageSegments = segments.slice(1);
+    if (pageSegments.length === 0) {
+      return [{ label: "Dashboard", href: `/${user.role}/dashboard`, isLast: true }];
+    }
+
+    const ROUTE_LABELS: Record<string, string> = {
+      dashboard: "Dashboard",
+      courses: "Courses",
+      new: "New Course",
+      "course-store": "Course Store",
+      catalog: "Course Catalog",
+      "my-training": "My Training",
+      "content-library": "Content Library",
+      "learning-paths": "Learning Paths",
+      certificates: "Certificates",
+      categories: "Categories",
+      calendar: "Training Calendar",
+      conferences: "Virtual Conferences",
+      discussions: "Discussions",
+      users: "Users",
+      groups: "User Groups",
+      reports: "Reports & Analytics",
+      notifications: "Notifications",
+      organization: "Organization",
+      subscription: "Subscription",
+      approvals: "Approvals",
+      settings: "Settings",
+      profile: "Profile & Security",
+      player: "Lesson Player",
+      edit: "Edit",
+    };
+
+    return pageSegments.map((segment, index) => {
+      const isLast = index === pageSegments.length - 1;
+      const href = `/${user.role}/${pageSegments.slice(0, index + 1).join("/")}`;
+
+      // Check if it's a known route label
+      let label = ROUTE_LABELS[segment.toLowerCase()];
+
+      // If not, check if it's a course id
+      if (!label) {
+        const foundCourse = allCourses.find((c) => c.id === segment);
+        if (foundCourse) {
+          label = foundCourse.title;
+        }
+      }
+
+      // Fallback: capitalize words
+      if (!label) {
+        label = segment
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+      }
+
+      return { label, href, isLast };
+    });
+  }, [pathname, user, allCourses]);
+
+  const isDashboard = useMemo(() => {
+    if (!pathname || !user) return false;
+    const segments = pathname.split("/").filter(Boolean);
+    const pageSegments = segments.slice(1);
+    return pageSegments.length === 0 || (pageSegments.length === 1 && pageSegments[0].toLowerCase() === "dashboard");
+  }, [pathname, user]);
 
   const initials = (user?.name || "User")
     .split(" ")
@@ -95,10 +186,12 @@ export function AppShell({
     sessionStorage.setItem("lms:sidebar:scroll", String(e.currentTarget.scrollTop));
   };
 
-  // Auto-close mobile drawer on route change
-  useEffect(() => {
+  // Auto-close mobile drawer on route change without cascading renders
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   if (!user) {
     return (
@@ -175,7 +268,7 @@ export function AppShell({
         <nav className="flex-1 sidebar-scrollbar py-3 px-3 space-y-1">
           {navItems.map((item) => {
             const href = `/${user.role}/${item.href}`;
-            const active = pathname === href;
+            const active = pathname === href || pathname.startsWith(`${href}/`);
             const Icon = item.icon;
             return (
               <Link
@@ -212,18 +305,24 @@ export function AppShell({
         {/* Mobile Help Support */}
         {helpItem && (
           <div className="px-3 py-3 border-t border-sidebar-border/70">
-            <Link
-              href={`/${user.role}/${helpItem.href}`}
-              scroll={false}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/80 transition-colors",
-                pathname === `/${user.role}/${helpItem.href}` && "bg-sidebar-accent text-sidebar-foreground font-bold"
-              )}
-            >
-              <HelpCircle className="w-4 h-4 shrink-0 text-sidebar-foreground/60" />
-              <span className="truncate">Help & Support</span>
-            </Link>
+            {(() => {
+              const helpHref = `/${user.role}/${helpItem.href}`;
+              const helpActive = pathname === helpHref || pathname.startsWith(`${helpHref}/`);
+              return (
+                <Link
+                  href={helpHref}
+                  scroll={false}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/80 transition-colors",
+                    helpActive && "bg-sidebar-accent text-sidebar-foreground font-bold"
+                  )}
+                >
+                  <HelpCircle className="w-4 h-4 shrink-0 text-sidebar-foreground/60" />
+                  <span className="truncate">Help & Support</span>
+                </Link>
+              );
+            })()}
           </div>
         )}
       </aside>
@@ -283,7 +382,7 @@ export function AppShell({
         >
           {navItems.map((item) => {
             const href = `/${user.role}/${item.href}`;
-            const active = pathname === href;
+            const active = pathname === href || pathname.startsWith(`${href}/`);
             const Icon = item.icon;
             return (
               <Link
@@ -330,21 +429,27 @@ export function AppShell({
         {/* Bottom Help Section (Expanded or Centered when Collapsed) */}
         {helpItem && (
           <div className={cn("py-3 border-t border-sidebar-border/70", isCollapsed ? "px-1.5 flex justify-center" : "px-2.5")}>
-            <Link
-              href={`/${user.role}/${helpItem.href}`}
-              scroll={false}
-              className={cn(
-                "flex items-center rounded-xl text-xs font-semibold text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/80 transition-colors",
-                isCollapsed
-                  ? "w-10 h-10 justify-center p-0"
-                  : "gap-3 px-3 py-2",
-                pathname === `/${user.role}/${helpItem.href}` && "bg-sidebar-accent text-sidebar-foreground font-bold"
-              )}
-              title={isCollapsed ? "Help & Support" : undefined}
-            >
-              <HelpCircle className="w-4 h-4 shrink-0 text-sidebar-foreground/60" />
-              {!isCollapsed && <span className="truncate">Help & Support</span>}
-            </Link>
+            {(() => {
+              const helpHref = `/${user.role}/${helpItem.href}`;
+              const helpActive = pathname === helpHref || pathname.startsWith(`${helpHref}/`);
+              return (
+                <Link
+                  href={helpHref}
+                  scroll={false}
+                  className={cn(
+                    "flex items-center rounded-xl text-xs font-semibold text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/80 transition-colors",
+                    isCollapsed
+                      ? "w-10 h-10 justify-center p-0"
+                      : "gap-3 px-3 py-2",
+                    helpActive && "bg-sidebar-accent text-sidebar-foreground font-bold"
+                  )}
+                  title={isCollapsed ? "Help & Support" : undefined}
+                >
+                  <HelpCircle className="w-4 h-4 shrink-0 text-sidebar-foreground/60" />
+                  {!isCollapsed && <span className="truncate">Help & Support</span>}
+                </Link>
+              );
+            })()}
           </div>
         )}
       </aside>
@@ -440,6 +545,38 @@ export function AppShell({
             </DropdownMenu>
           </div>
         </header>
+
+        {/* Dynamic Breadcrumbs Bar (Hidden on Dashboard) */}
+        {!isDashboard && (
+          <div className="px-4 sm:px-6 py-2.5 bg-surface-base/60 backdrop-blur-xs border-b border-surface-border/60 flex items-center overflow-x-auto select-none">
+            <Breadcrumb>
+              <BreadcrumbList className="text-xs">
+                <BreadcrumbItem>
+                  <BreadcrumbLink render={<Link href={`/${user.role}/dashboard`} />} className="flex items-center gap-1.5 text-text-tertiary hover:text-text-primary transition-colors">
+                    <Home className="w-3.5 h-3.5" />
+                    <span>Dashboard</span>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {breadcrumbItems.map((crumb) => (
+                  <span key={crumb.href} className="inline-flex items-center gap-1.5">
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      {crumb.isLast ? (
+                        <BreadcrumbPage className="font-semibold text-text-primary truncate max-w-xs sm:max-w-md">
+                          {crumb.label}
+                        </BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink render={<Link href={crumb.href} />} className="text-text-tertiary hover:text-text-primary transition-colors truncate max-w-[150px]">
+                          {crumb.label}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </span>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        )}
 
         <main className="flex-1 min-w-0">{children}</main>
       </div>

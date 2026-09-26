@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -63,11 +64,12 @@ export function resolveCourseThumbnail(course: Course): string {
 export interface CourseCardProps {
   course: Course;
   user: MockUser;
-  mode?: "management" | "catalog" | "learning";
+  mode?: "management" | "catalog" | "learning" | "store";
   isEnrolled?: boolean;
   progress?: number;
   editable?: boolean;
   onEnroll?: (courseId: string) => void;
+  href?: string;
 }
 
 export function CourseCard({
@@ -78,6 +80,7 @@ export function CourseCard({
   progress = 0,
   editable = true,
   onEnroll,
+  href,
 }: CourseCardProps) {
   const [imgError, setImgError] = useState(false);
   const fallbackSrc = CATEGORY_THUMBNAILS[course.category] || CATEGORY_THUMBNAILS.default;
@@ -96,8 +99,16 @@ export function CourseCard({
   const isBestseller = (course.enrolled || 0) >= 300 || rating >= 4.85;
   const isHighestRated = rating >= 4.9;
 
+  const destinationHref = href || (mode === "store" ? `/${user.role}/course-store/${course.id}` : `/${user.role}/courses/${course.id}/player`);
+
   return (
-    <div className="group flex flex-col h-full bg-card rounded-2xl border border-border overflow-hidden hover:shadow-xl hover:border-primary/40 transition-all duration-300">
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -25px 0px" }}
+      transition={{ duration: 0.32, ease: "easeOut" }}
+      className="group flex flex-col h-full bg-card rounded-2xl border border-border overflow-hidden hover:shadow-xl hover:border-primary/40 transition-colors duration-300"
+    >
       {/* 1. MEDIA THUMBNAIL (16:9 Aspect Ratio) */}
       <div className="relative aspect-video w-full overflow-hidden bg-muted select-none">
         <img
@@ -108,7 +119,10 @@ export function CourseCard({
         />
 
         {/* Hover Dark Overlay with Center Play Circle */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+        <div
+          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px] cursor-pointer"
+          onClick={() => window.location.href = destinationHref}
+        >
           <div className="w-12 h-12 rounded-full bg-primary/95 text-primary-foreground flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
             <Play className="w-5 h-5 fill-current translate-x-0.5" />
           </div>
@@ -167,9 +181,11 @@ export function CourseCard({
           </div>
 
           {/* Course Title */}
-          <h3 className="font-bold text-foreground group-hover:text-primary transition-colors text-sm sm:text-base leading-snug line-clamp-2">
-            {course.title}
-          </h3>
+          <Link href={destinationHref} className="block group/title">
+            <h3 className="font-bold text-foreground group-hover/title:text-primary transition-colors text-sm sm:text-base leading-snug line-clamp-2">
+              {course.title}
+            </h3>
+          </Link>
 
           {/* Instructor / Department / Org */}
           <p className="text-xs text-muted-foreground truncate">
@@ -223,8 +239,8 @@ export function CourseCard({
 
         {/* 3. CARD FOOTER: PRICE & ACTION CONTROLS */}
         <div className="pt-3 border-t border-border space-y-3">
-          {/* Price Row (for Catalog Mode) */}
-          {mode === "catalog" && (
+          {/* Price Row (for Catalog & Store Mode) */}
+          {(mode === "catalog" || mode === "store") && (
             <div className="flex items-baseline gap-2">
               <span className="text-base font-black text-foreground">
                 {price > 0 ? `$${price}` : "Free"}
@@ -292,6 +308,18 @@ export function CourseCard({
             </div>
           )}
 
+          {mode === "store" && (
+            <Button
+              size="sm"
+              variant="default"
+              className="w-full h-9 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
+              render={<Link href={destinationHref} />}
+            >
+              <ShoppingBag className="w-3.5 h-3.5 mr-1.5" />
+              View Details & Acquire
+            </Button>
+          )}
+
           {mode === "learning" && (
             <Button
               size="sm"
@@ -305,6 +333,6 @@ export function CourseCard({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

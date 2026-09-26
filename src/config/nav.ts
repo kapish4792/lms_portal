@@ -63,8 +63,8 @@ export interface NavItem {
  */
 export const NAV_ITEMS: NavItem[] = [
   {
-    id: "home",
-    label: "Home",
+    id: "dashboard",
+    label: "Dashboard",
     href: "dashboard",
     icon: Home,
     roles: ["lms-admin", "super-admin", "org-admin", "dept-head", "instructor", "manager", "learner"],

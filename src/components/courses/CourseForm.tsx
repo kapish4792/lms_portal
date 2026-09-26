@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Dialog,
   DialogContent,
@@ -251,11 +252,6 @@ export function CourseForm({ user, existing }: { user: MockUser; existing?: Cour
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [catError, setCatError] = useState("");
 
-  const toggleCategory = (cat: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
-    );
-  };
 
   const handleCreateCategory = () => {
     const trimmed = newCatName.trim();
@@ -731,61 +727,38 @@ export function CourseForm({ user, existing }: { user: MockUser; existing?: Cour
               </div>
             )}
 
-            {/* Selected Category Badges */}
-            {selectedCategories.length > 0 ? (
-              <div className="flex flex-wrap gap-2 p-3 rounded-xl border border-border bg-muted/30">
-                {selectedCategories.map((c) => (
-                  <span
-                    key={c}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-primary/10 text-primary border border-primary/20 shadow-2xs"
-                  >
-                    <span>{c}</span>
-                    <button
-                      type="button"
-                      onClick={() => toggleCategory(c)}
-                      className="hover:bg-primary/20 rounded p-0.5 transition-colors cursor-pointer text-primary"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategories([])}
-                  className="text-xs text-muted-foreground hover:text-destructive px-2 py-1 transition-colors underline cursor-pointer"
-                >
-                  Clear all
-                </button>
-              </div>
-            ) : (
-              <div className="p-3 rounded-xl border border-dashed border-border text-center text-xs text-muted-foreground">
-                No categories selected yet. Click suggestion chips below to select.
-              </div>
-            )}
-
-            {/* Suggestion Chips */}
+            {/* Searchable Multi-Select Category Input Box */}
             <div className="space-y-1.5">
-              <span className="text-xs font-semibold text-foreground/80">Available Categories:</span>
-              <div className="flex flex-wrap gap-1.5">
-                {categoryOptions.map((cat) => {
-                  const isSelected = selectedCategories.includes(cat);
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => toggleCategory(cat)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                        isSelected
-                          ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                          : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      {isSelected ? "✓ " : "+ "}
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
+              <label className="text-xs font-semibold text-foreground/80">
+                Select Categories
+              </label>
+              <MultiSelect
+                options={categoryOptions}
+                value={selectedCategories}
+                onValueChange={setSelectedCategories}
+                placeholder="Search and select categories..."
+                searchPlaceholder="Type to search or create category..."
+                searchable={true}
+                onCreateOption={
+                  canCreateCategory
+                    ? (catName) => {
+                        const trimmed = catName.trim();
+                        if (!trimmed) return;
+                        if (!categoryOptions.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+                          addCategory({
+                            name: trimmed,
+                            org: user.org,
+                            color: "var(--primary)",
+                          });
+                        }
+                        setSelectedCategories((prev) => (prev.includes(trimmed) ? prev : [...prev, trimmed]));
+                      }
+                    : undefined
+                }
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Search and select one or more categories for this course.
+              </p>
             </div>
           </CardContent>
         </Card>

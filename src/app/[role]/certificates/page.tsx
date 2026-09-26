@@ -23,6 +23,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Award,
   Sparkles,
   Search,
@@ -38,6 +45,8 @@ import {
   Calendar,
   XCircle,
   Download,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 
 export default function CertificatesPage() {
@@ -52,7 +61,7 @@ export default function CertificatesPage() {
 
   const [activeTab, setActiveTab] = useState<"issued" | "designer">("issued");
   const [search, setSearch] = useState("");
-  const [courseFilter, setCourseFilter] = useState("all");
+  const [courseFilter, setCourseFilter] = useState("All Certified Courses");
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
 
   // Modal for full-size viewing & printing
@@ -91,7 +100,7 @@ export default function CertificatesPage() {
         cert.certificateId.toLowerCase().includes(search.toLowerCase());
 
       const matchesCourse =
-        courseFilter === "all" || cert.courseId === courseFilter;
+        courseFilter === "All Certified Courses" || cert.courseId === courseFilter;
 
       return matchesSearch && matchesCourse;
     });
@@ -251,32 +260,49 @@ export default function CertificatesPage() {
         {(isLearner || activeTab === "issued") && (
           <div className="space-y-4">
             {/* Search & Course Filter Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-surface-base p-3.5 rounded-xl border border-surface-border shadow-xs">
-              <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
+            <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3">
+              <div className="relative flex-1 min-w-55 sm:max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by learner, course, or ID..."
-                  className="pl-9 text-xs h-9"
+                  className="h-9 pl-9 bg-surface-base"
                 />
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Filter className="w-3.5 h-3.5 text-text-tertiary shrink-0" />
-                <select
-                  value={courseFilter}
-                  onChange={(e) => setCourseFilter(e.target.value)}
-                  aria-label="Filter certificates by course"
-                  className="w-full sm:w-60 h-9 px-3 text-xs bg-surface-base border border-surface-border rounded-lg text-text-primary outline-none focus:border-primary cursor-pointer"
-                >
-                  <option value="all">All Certified Courses</option>
-                  {uniqueCourses.map((c: any) => (
-                    <option key={c.id} value={c.id}>
-                      {c.title}
-                    </option>
-                  ))}
-                </select>
+              <div className="hidden sm:block h-6 w-px bg-surface-border" />
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+                <Select value={courseFilter} onValueChange={(v) => setCourseFilter(v ?? "All Certified Courses")}>
+                  <SelectTrigger size="sm" className="w-56 bg-surface-base">
+                    <SelectValue placeholder="All Certified Courses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All Certified Courses">All Certified Courses</SelectItem>
+                    {uniqueCourses.map((c: any) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {(search || courseFilter !== "All Certified Courses") && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                    onClick={() => {
+                      setSearch("");
+                      setCourseFilter("All Certified Courses");
+                    }}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
 

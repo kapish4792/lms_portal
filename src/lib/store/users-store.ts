@@ -16,7 +16,10 @@ export interface DirectoryUser {
   status: AccountStatus;
   registeredAt: string; // ISO date
   groupIds?: string[]; // Group.id in useGroupsStore
+  dob?: string; // Date of birth (YYYY-MM-DD)
 }
+
+export type UpdateUserInput = Partial<Omit<DirectoryUser, "id" | "registeredAt">>;
 
 const seedDirectory = (): DirectoryUser[] => {
   const extra: DirectoryUser[] = [
@@ -46,16 +49,17 @@ const seedDirectory = (): DirectoryUser[] => {
 interface UsersState {
   directory: DirectoryUser[];
   addUser: (user: Omit<DirectoryUser, "id" | "registeredAt" | "status">) => string;
+  updateUser: (id: string, patch: UpdateUserInput) => void;
   setStatus: (ids: string[], status: AccountStatus) => void;
 }
 
 export const useUsersStore = create<UsersState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       directory: seedDirectory(),
       addUser: (user) => {
         if (user.role === "lms-admin") {
-          const existingLmsAdmin = useUsersStore.getState().directory.find((u) => u.role === "lms-admin");
+          const existingLmsAdmin = get().directory.find((u) => u.role === "lms-admin");
           if (existingLmsAdmin) {
             throw new Error("Only one LMS Administrator can exist. An LMS Admin already exists in the system.");
           }
@@ -74,6 +78,10 @@ export const useUsersStore = create<UsersState>()(
         }));
         return id;
       },
+      updateUser: (id, patch) =>
+        set((state) => ({
+          directory: state.directory.map((u) => (u.id === id ? { ...u, ...patch } : u)),
+        })),
       setStatus: (ids, status) =>
         set((state) => ({
           directory: state.directory.map((u) => (ids.includes(u.id) ? { ...u, status } : u)),

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useRoleGuard } from "@/lib/hooks/use-role-guard";
 import { AppShell } from "@/components/layout/AppShell";
-import { AddUserDialog } from "@/components/users/AddUserDialog";
+import { EditUserDialog } from "@/components/users/EditUserDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +24,10 @@ import {
 } from "@/components/ui/dialog";
 import Link from "next/link";
 import { useUsersStore } from "@/lib/store/users-store";
+import type { DirectoryUser } from "@/lib/store/users-store";
+import { useOrganizationsStore } from "@/lib/store/organizations-store";
 import { ROLE_LABELS } from "@/lib/permissions";
-import { Plus, Search, Download, Edit, Trash2, MoreHorizontal, UserCheck, UserX } from "lucide-react";
+import { Plus, Search, Download, Edit, Trash2, MoreHorizontal, UserCheck, UserX, SlidersHorizontal, X } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import {
   DropdownMenu,
@@ -40,13 +42,17 @@ export default function UsersDirectoryPage() {
   const user = useRoleGuard(params.role);
   const directory = useUsersStore((s) => s.directory);
   const setStatus = useUsersStore((s) => s.setStatus);
+  const updateUser = useUsersStore((s) => s.updateUser);
+  const organizations = useOrganizationsStore((s) => s.organizations);
 
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [roleFilter, setRoleFilter] = useState<string>("All User Types");
+  const [statusFilter, setStatusFilter] = useState<string>("All Status");
   const [selected, setSelected] = useState<string[]>([]);
   const [orgStepOpen, setOrgStepOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedOrgId, setSelectedOrgId] = useState<string>("");
+  const [editingUser, setEditingUser] = useState<DirectoryUser | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
@@ -61,8 +67,8 @@ export default function UsersDirectoryPage() {
         !search.trim() ||
         `${d.firstName} ${d.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
         d.email.toLowerCase().includes(search.toLowerCase());
-      const matchesRole = roleFilter === "all" || d.role === roleFilter;
-      const matchesStatus = statusFilter === "all" || d.status === statusFilter;
+      const matchesRole = roleFilter === "All User Types" || d.role === roleFilter;
+      const matchesStatus = statusFilter === "All Status" || d.status === statusFilter;
       return matchesSearch && matchesRole && matchesStatus;
     });
   }, [scoped, search, roleFilter, statusFilter]);
@@ -91,11 +97,11 @@ export default function UsersDirectoryPage() {
 
   const exportCsv = () => {
     const rows = filtered.filter((d) => selected.length === 0 || selected.includes(d.id));
-    const header = ["First Name", "Last Name", "Email", "User Type", "Department", "Status", "Registered"];
+    const header = ["First Name", "Last Name", "Email", "User Type", "Department", "Status", "Registered", "Date of Birth"];
     const csv = [
       header.join(","),
       ...rows.map((r) =>
-        [r.firstName, r.lastName, r.email, ROLE_LABELS[r.role], r.department ?? "", r.status, r.registeredAt].join(",")
+        [r.firstName, r.lastName, r.email, ROLE_LABELS[r.role], r.department ?? "", r.status, r.registeredAt, r.dob ?? ""].join(",")
       ),
     ].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -108,8 +114,18 @@ export default function UsersDirectoryPage() {
   };
 
   const handleAddUserClick = () => {
-    if (user.role === "super-admin" || user.role === "lms-admin") setOrgStepOpen(true);
-    else setDialogOpen(true);
+    if (user.role === "super-admin" || user.role === "lms-admin") {
+      setSelectedOrgId("");
+      setOrgStepOpen(true);
+    } else {
+      setEditingUser(null);
+      setDialogOpen(true);
+    }
+  };
+
+  const handleEditUser = (u: DirectoryUser) => {
+    setEditingUser(u);
+    setDialogOpen(true);
   };
 
   return (
@@ -128,39 +144,61 @@ export default function UsersDirectoryPage() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+        <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3">
+          <div className="relative flex-1 min-w-55 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
             <Input
               placeholder="Search name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
+              className="h-9 pl-9 bg-surface-base"
             />
           </div>
-          <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v ?? "all")}>
-            <SelectTrigger>
-              <SelectValue placeholder="User type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All user types</SelectItem>
-              {Object.entries(ROLE_LABELS).map(([role, label]) => (
-                <SelectItem key={role} value={role}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "all")}>
-            <SelectTrigger>
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Suspended">Suspended</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <div className="hidden sm:block h-6 w-px bg-surface-border" />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v ?? "All User Types")}>
+              <SelectTrigger size="sm" className="w-37.5 bg-surface-base">
+                <SelectValue placeholder="User type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All User Types">All User Types</SelectItem>
+                {Object.entries(ROLE_LABELS).map(([role, label]) => (
+                  <SelectItem key={role} value={role}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "All Status")}>
+              <SelectTrigger size="sm" className="w-32.5 bg-surface-base">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Status">All Statuses</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Suspended">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {(search || roleFilter !== "All User Types" || statusFilter !== "All Status") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                onClick={() => {
+                  setSearch("");
+                  setRoleFilter("All User Types");
+                  setStatusFilter("All Status");
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
         {selected.length > 0 && (
@@ -209,7 +247,12 @@ export default function UsersDirectoryPage() {
                     />
                   </td>
                   <td className="p-3 font-medium text-text-primary">
-                    {d.firstName} {d.lastName}
+                    <div>{d.firstName} {d.lastName}</div>
+                    {d.dob && (
+                      <div className="text-[11px] font-normal text-text-tertiary">
+                        DOB: {d.dob}
+                      </div>
+                    )}
                   </td>
                   <td className="p-3 text-text-secondary">{d.email}</td>
                   <td className="p-3 text-text-secondary">{ROLE_LABELS[d.role]}</td>
@@ -242,11 +285,7 @@ export default function UsersDirectoryPage() {
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => {
-                            console.log("Edit user:", d.id);
-                          }}
-                        >
+                        <DropdownMenuItem onClick={() => handleEditUser(d)}>
                           <Edit className="w-4 h-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
@@ -290,28 +329,75 @@ export default function UsersDirectoryPage() {
           <DialogHeader>
             <DialogTitle>Before you add a user</DialogTitle>
             <DialogDescription>
-              Want to restrict this user to a specific organization? Create the
-              organization first so they receive the correct registration link and
-              dedicated login.
+              Select an existing organization, create a new one, or skip to add the
+              user to your current organization ({user.org}).
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" render={<Link href={`/${user.role}/organization`} />} onClick={() => setOrgStepOpen(false)}>
+          <div className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <label htmlFor="org-select" className="text-sm font-medium text-text-primary">
+                Existing Organization
+              </label>
+              <Select value={selectedOrgId} onValueChange={(v) => setSelectedOrgId(v ?? "")}>
+                <SelectTrigger id="org-select" className="w-full">
+                  <SelectValue placeholder="Select an organization..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {organizations.map((org) => (
+                    <SelectItem key={org.id} value={org.id}>
+                      {org.name} ({org.subdomain})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-text-tertiary">
+                Or choose an action below
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              render={<Link href={`/${user.role}/organization`} />}
+              onClick={() => setOrgStepOpen(false)}
+              className="w-full sm:w-auto"
+            >
               Create organization
             </Button>
             <Button
+              variant="outline"
               onClick={() => {
+                setEditingUser(null);
                 setOrgStepOpen(false);
                 setDialogOpen(true);
               }}
+              className="w-full sm:w-auto"
             >
-              Skip
+              Add to current org ({user.org})
+            </Button>
+            <Button
+              onClick={() => {
+                if (!selectedOrgId) return;
+                setEditingUser(null);
+                setOrgStepOpen(false);
+                setDialogOpen(true);
+              }}
+              disabled={!selectedOrgId}
+              className="w-full sm:w-auto"
+            >
+              Add to selected org
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <AddUserDialog open={dialogOpen} onOpenChange={setDialogOpen} org={user.org} />
+      <EditUserDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        user={editingUser}
+        currentUserRole={user.role}
+        currentUserOrg={user.org}
+      />
     </AppShell>
   );
 }

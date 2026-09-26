@@ -70,6 +70,8 @@ import {
   Check,
   Send,
   Loader2,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 
 const DEVICE_ICONS = { laptop: Laptop, smartphone: Smartphone, tablet: Tablet } as const;
@@ -127,7 +129,7 @@ export default function ReportsPage() {
   const [usersSearch, setUsersSearch] = useState("");
   const [coursesSearch, setCoursesSearch] = useState("");
   const [activitySearch, setActivitySearch] = useState("");
-  const [activityFilter, setActivityFilter] = useState<string>("all");
+  const [activityFilter, setActivityFilter] = useState<string>("All Events");
 
   // Custom Reports state
   const [customSource, setCustomSource] = useState<"users" | "courses" | "groups" | "paths">("users");
@@ -200,7 +202,7 @@ export default function ReportsPage() {
       !activitySearch.trim() ||
       a.learnerName.toLowerCase().includes(activitySearch.toLowerCase()) ||
       a.courseName.toLowerCase().includes(activitySearch.toLowerCase());
-    const matchesAction = activityFilter === "all" || a.action === activityFilter;
+    const matchesAction = activityFilter === "All Events" || a.action === activityFilter;
     return matchesSearch && matchesAction;
   });
 
@@ -476,14 +478,22 @@ export default function ReportsPage() {
           {/* 2. USERS TAB */}
           <TabsContent value="users" className="space-y-4 pt-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+              <div className="relative w-full sm:w-64 flex items-center">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
                 <Input
                   placeholder="Search user name or email..."
                   value={usersSearch}
                   onChange={(e) => setUsersSearch(e.target.value)}
-                  className="pl-8"
+                  className="h-9 pl-9 pr-8 bg-surface-base"
                 />
+                {usersSearch && (
+                  <button
+                    onClick={() => setUsersSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
               <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportUsers}>
                 <Download className="w-3.5 h-3.5" />
@@ -536,14 +546,22 @@ export default function ReportsPage() {
           {/* 3. COURSES TAB */}
           <TabsContent value="courses" className="space-y-4 pt-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+              <div className="relative w-full sm:w-64 flex items-center">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
                 <Input
                   placeholder="Search course title or category..."
                   value={coursesSearch}
                   onChange={(e) => setCoursesSearch(e.target.value)}
-                  className="pl-8"
+                  className="h-9 pl-9 pr-8 bg-surface-base"
                 />
+                {coursesSearch && (
+                  <button
+                    onClick={() => setCoursesSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
               <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportCourses}>
                 <Download className="w-3.5 h-3.5" />
@@ -761,34 +779,55 @@ export default function ReportsPage() {
           {/* 7. LEARNING ACTIVITIES TAB */}
           <TabsContent value="activities" className="space-y-4 pt-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-3 flex-wrap flex-1">
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+              <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3 flex-1 min-w-[280px]">
+                <div className="relative flex-1 min-w-55 sm:max-w-xs">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
                   <Input
                     placeholder="Search learner or course..."
                     value={activitySearch}
                     onChange={(e) => setActivitySearch(e.target.value)}
-                    className="pl-8"
+                    className="h-9 pl-9 bg-surface-base"
                   />
                 </div>
-                <Select value={activityFilter} onValueChange={(v) => setActivityFilter(v ?? "all")}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Event Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Events</SelectItem>
-                    <SelectItem value="Lesson Started">Lesson Started</SelectItem>
-                    <SelectItem value="Lesson Completed">Lesson Completed</SelectItem>
-                    <SelectItem value="Test Passed">Test Passed</SelectItem>
-                    <SelectItem value="Test Failed">Test Failed</SelectItem>
-                    <SelectItem value="Assignment Submitted">Assignment Submitted</SelectItem>
-                    <SelectItem value="Certificate Issued">Certificate Issued</SelectItem>
-                    <SelectItem value="User Registered">User Registered</SelectItem>
-                  </SelectContent>
-                </Select>
+
+                <div className="hidden sm:block h-6 w-px bg-surface-border" />
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+                  <Select value={activityFilter} onValueChange={(v) => setActivityFilter(v ?? "All Events")}>
+                    <SelectTrigger size="sm" className="w-48 bg-surface-base">
+                      <SelectValue placeholder="Event Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All Events">All Events</SelectItem>
+                      <SelectItem value="Lesson Started">Lesson Started</SelectItem>
+                      <SelectItem value="Lesson Completed">Lesson Completed</SelectItem>
+                      <SelectItem value="Test Passed">Test Passed</SelectItem>
+                      <SelectItem value="Test Failed">Test Failed</SelectItem>
+                      <SelectItem value="Assignment Submitted">Assignment Submitted</SelectItem>
+                      <SelectItem value="Certificate Issued">Certificate Issued</SelectItem>
+                      <SelectItem value="User Registered">User Registered</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {(activitySearch || activityFilter !== "All Events") && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                      onClick={() => {
+                        setActivitySearch("");
+                        setActivityFilter("All Events");
+                      }}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
               </div>
 
-              <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportActivities}>
+              <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={handleExportActivities}>
                 <Download className="w-3.5 h-3.5" />
                 Export Audit Log (CSV)
               </Button>

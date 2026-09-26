@@ -19,7 +19,7 @@ import {
 import { useCoursesStore } from "@/lib/store/courses-store";
 import { useCategoriesStore } from "@/lib/store/categories-store";
 import { canEditDepartmentResource } from "@/lib/permissions";
-import { Plus, Search, X, BookOpen } from "lucide-react";
+import { Plus, Search, X, BookOpen, SlidersHorizontal } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import { getFilterOptions } from "@/lib/config/filters";
 import { CourseCard } from "@/components/courses/CourseCard";
@@ -126,59 +126,64 @@ function CoursesListContent() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+        <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3">
+          <div className="relative flex-1 min-w-55 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
             <Input
               placeholder="Search courses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
+              className="h-9 pl-9 bg-surface-base"
             />
           </div>
 
-          <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? "All Categories")}>
-            <SelectTrigger>
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All Categories" className={"p-2"} >All Categories</SelectItem>
-              {categories.map((c) => (
-                <SelectItem key={c} value={c} className={"p-2"}>
-                  {c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="hidden sm:block h-6 w-px bg-surface-border" />
 
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "All Status")}>
-            <SelectTrigger>
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              {statusOptions.map((opt) => (
-                <SelectItem className={"p-2"} key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2 flex-wrap">
+            <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? "All Categories")}>
+              <SelectTrigger size="sm" className="w-40 bg-surface-base">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Categories">All Categories</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          {(categoryFilter !== "All Categories" || statusFilter !== "All Status" || search) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1.5 text-text-tertiary hover:text-text-primary"
-              onClick={() => {
-                setSearch("");
-                setCategoryFilter("All Categories");
-                setStatusFilter("All Status");
-              }}
-            >
-              <X className="w-3.5 h-3.5" />
-              Reset filters
-            </Button>
-          )}
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "All Status")}>
+              <SelectTrigger size="sm" className="w-36 bg-surface-base">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {(categoryFilter !== "All Categories" || statusFilter !== "All Status" || search) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                onClick={() => {
+                  setSearch("");
+                  setCategoryFilter("All Categories");
+                  setStatusFilter("All Status");
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-5">

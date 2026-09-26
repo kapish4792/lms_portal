@@ -39,6 +39,8 @@ import {
   Send,
   User,
   GraduationCap,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 
 export default function DiscussionsPage() {
@@ -55,8 +57,8 @@ export default function DiscussionsPage() {
   const courses = useCoursesStore((s) => s.courses);
 
   const [search, setSearch] = useState("");
-  const [filterCourse, setFilterCourse] = useState("all");
-  const [filterStatus, setFilterStatus] = useState<"all" | "pinned" | "resolved" | "unanswered">("all");
+  const [filterCourse, setFilterCourse] = useState("All Courses");
+  const [filterStatus, setFilterStatus] = useState("All Discussions");
   const [modalOpen, setModalOpen] = useState(false);
   const [expandedThreadId, setExpandedThreadId] = useState<string | null>(null);
 
@@ -78,9 +80,9 @@ export default function DiscussionsPage() {
       t.title.toLowerCase().includes(search.toLowerCase()) ||
       t.content.toLowerCase().includes(search.toLowerCase()) ||
       t.authorName.toLowerCase().includes(search.toLowerCase());
-    const matchesCourse = filterCourse === "all" || t.courseTitle === filterCourse;
+    const matchesCourse = filterCourse === "All Courses" || t.courseTitle === filterCourse;
     const matchesStatus =
-      filterStatus === "all" ||
+      filterStatus === "All Discussions" ||
       (filterStatus === "pinned" && t.isPinned) ||
       (filterStatus === "resolved" && t.isResolved) ||
       (filterStatus === "unanswered" && t.replies.length === 0);
@@ -144,24 +146,27 @@ export default function DiscussionsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+        <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3">
+          <div className="relative flex-1 min-w-55 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
             <Input
               placeholder="Search questions, answers, topics..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
+              className="h-9 pl-9 bg-surface-base"
             />
           </div>
 
+          <div className="hidden sm:block h-6 w-px bg-surface-border" />
+
           <div className="flex items-center gap-2 flex-wrap">
-            <Select value={filterCourse} onValueChange={(v) => setFilterCourse(v ?? "all")}>
-              <SelectTrigger className="w-48">
+            <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <Select value={filterCourse} onValueChange={(v) => setFilterCourse(v ?? "All Courses")}>
+              <SelectTrigger size="sm" className="w-48 bg-surface-base">
                 <SelectValue placeholder="All Courses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Courses</SelectItem>
+                <SelectItem value="All Courses">All Courses</SelectItem>
                 {scopedCourses.map((c) => (
                   <SelectItem key={c.id} value={c.title}>
                     {c.title}
@@ -173,21 +178,37 @@ export default function DiscussionsPage() {
             <Select
               value={filterStatus}
               onValueChange={(v) => {
-                if (v === "all" || v === "pinned" || v === "resolved" || v === "unanswered") {
+                if (v === "All Discussions" || v === "pinned" || v === "resolved" || v === "unanswered") {
                   setFilterStatus(v);
                 }
               }}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger size="sm" className="w-40 bg-surface-base">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Discussions</SelectItem>
+                <SelectItem value="All Discussions">All Discussions</SelectItem>
                 <SelectItem value="pinned">Pinned Only</SelectItem>
                 <SelectItem value="resolved">Resolved</SelectItem>
                 <SelectItem value="unanswered">Unanswered</SelectItem>
               </SelectContent>
             </Select>
+
+            {(search || filterCourse !== "All Courses" || filterStatus !== "All Discussions") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                onClick={() => {
+                  setSearch("");
+                  setFilterCourse("All Courses");
+                  setFilterStatus("All Discussions");
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </Button>
+            )}
           </div>
         </div>
 

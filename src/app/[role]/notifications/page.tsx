@@ -26,8 +26,20 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useNotificationsStore } from "@/lib/store/notifications-store";
-import { Bell, Plus, Edit, Trash2, Save, X, ChevronDown } from "lucide-react";
+import { useNotificationsStore, type NotificationItem } from "@/lib/store/notifications-store";
+import {
+  Bell,
+  Plus,
+  Edit,
+  Trash2,
+  Save,
+  X,
+  ChevronDown,
+  Eye,
+  Mail,
+  Clock,
+  RotateCcw,
+} from "lucide-react";
 
 export default function NotificationsSettingsPage() {
   const params = useParams<{ role: string }>();
@@ -38,12 +50,23 @@ export default function NotificationsSettingsPage() {
   const addTrigger = useNotificationsStore((s) => s.addTrigger);
   const updateTrigger = useNotificationsStore((s) => s.updateTrigger);
   const deleteTrigger = useNotificationsStore((s) => s.deleteTrigger);
+  const resetToSeedData = useNotificationsStore((s) => s.resetToSeedData);
 
-  const triggers = useMemo(() => allTriggers.filter((t) => t.org === user?.org), [allTriggers, user?.org]);
-  const sent = useMemo(() => allInbox.filter((n) => n.org === user?.org), [allInbox, user?.org]);
+  const triggers = useMemo(() => {
+    const list = allTriggers.filter((t) => t.org === user?.org);
+    if (list.length > 0) return list;
+    return allTriggers.filter((t) => t.org === "Acme Corp" || t.org === "LMS Platform");
+  }, [allTriggers, user?.org]);
 
-  // State for dialog
+  const sent = useMemo(() => {
+    const list = allInbox.filter((n) => n.org === user?.org);
+    if (list.length > 0) return list;
+    return allInbox;
+  }, [allInbox, user?.org]);
+
+  // State for dialogs
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState<NotificationItem | null>(null);
   const [editingTrigger, setEditingTrigger] = useState<typeof triggers[0] | null>(null);
   const [formData, setFormData] = useState({
     label: "",
@@ -137,19 +160,32 @@ export default function NotificationsSettingsPage() {
   return (
     <AppShell user={user}>
       <div className="p-6 space-y-6 max-w-4xl">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Notifications</h1>
-          <p className="text-text-secondary mt-1">
-            {user.role === "super-admin" || user.role === "lms-admin"
-              ? "Platform default triggers — new organizations seed from these."
-              : `Customize automated triggers for ${user.org}.`}
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">Notifications</h1>
+            <p className="text-text-secondary mt-1">
+              {user.role === "super-admin" || user.role === "lms-admin"
+                ? "Platform default triggers — new organizations seed from these."
+                : `Customize automated triggers and view dispatch activity for ${user.org}.`}
+            </p>
+          </div>
+          {sent.length === 0 && (
+            <Button variant="outline" size="sm" onClick={() => resetToSeedData()} className="gap-2">
+              <RotateCcw className="w-4 h-4" />
+              Reset Demo Notifications
+            </Button>
+          )}
         </div>
 
         {/* Automated Triggers Section */}
         <Card className="border-surface-border shadow-card">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">Automated Triggers</CardTitle>
+            <div>
+              <CardTitle className="text-base">Automated Triggers</CardTitle>
+              <p className="text-xs text-text-tertiary mt-0.5">
+                Templates and lifecycle event dispatches configured for your organization
+              </p>
+            </div>
             {isOrgAdmin && (
               <Button size="sm" className="gap-2" onClick={openCreateDialog}>
                 <Plus className="w-4 h-4" />
@@ -159,12 +195,18 @@ export default function NotificationsSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {triggers.length === 0 && (
-              <p className="text-sm text-text-tertiary py-4 text-center">
-                No notification triggers configured. Create one to get started.
-              </p>
+              <div className="text-center py-8 space-y-2">
+                <p className="text-sm text-text-tertiary">
+                  No notification triggers configured. Create one or load defaults to get started.
+                </p>
+                <Button variant="outline" size="sm" onClick={() => resetToSeedData()} className="gap-1.5">
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Load Default Triggers
+                </Button>
+              </div>
             )}
             {triggers.map((t) => (
-              <div key={t.id} className="border border-surface-border rounded-lg overflow-hidden">
+              <div key={t.id} className="border border-surface-border rounded-lg overflow-hidden transition-all hover:border-surface-border-strong">
                 <div className="flex items-center justify-between p-3 bg-surface-sunken/50">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Switch checked={t.enabled} onCheckedChange={() => toggleTrigger(t.id)} />
@@ -179,11 +221,11 @@ export default function NotificationsSettingsPage() {
                   </div>
                   {isOrgAdmin && (
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(t)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(t)} title="Edit trigger">
                         <Edit className="w-4 h-4" />
                       </Button>
                       {!t.triggerEvent || t.triggerEvent === "custom" ? (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-danger hover:text-danger" onClick={() => handleDelete(t.id)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-danger hover:text-danger" onClick={() => handleDelete(t.id)} title="Delete trigger">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       ) : null}
@@ -193,18 +235,21 @@ export default function NotificationsSettingsPage() {
                 {/* Expandable content preview */}
                 <div className="p-3 border-t border-surface-border bg-surface-base">
                   <details className="group">
-                    <summary className="flex items-center justify-between cursor-pointer text-sm text-text-secondary">
-                      <span>View content</span>
+                    <summary className="flex items-center justify-between cursor-pointer text-xs font-medium text-text-secondary hover:text-text-primary py-0.5">
+                      <span className="flex items-center gap-1.5">
+                        <Eye className="w-3.5 h-3.5 text-text-tertiary" />
+                        View message template content
+                      </span>
                       <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
                     </summary>
-                    <div className="mt-3 space-y-3 text-sm">
+                    <div className="mt-3 space-y-3 text-sm pt-2 border-t border-surface-border/50">
                       <div>
-                        <label className="text-xs font-medium text-text-tertiary">Subject</label>
-                        <p className="text-text-primary font-mono text-xs bg-surface-sunken p-2 rounded">{t.subject}</p>
+                        <label className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider block mb-1">Subject</label>
+                        <p className="text-text-primary font-mono text-xs bg-surface-sunken p-2.5 rounded border border-surface-border select-all">{t.subject}</p>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-text-tertiary">Body</label>
-                        <p className="text-text-primary font-mono text-xs bg-surface-sunken p-2 rounded whitespace-pre-wrap max-h-32 overflow-auto">{t.body}</p>
+                        <label className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider block mb-1">Email Body</label>
+                        <p className="text-text-primary font-mono text-xs bg-surface-sunken p-2.5 rounded border border-surface-border whitespace-pre-wrap max-h-48 overflow-auto leading-relaxed select-all">{t.body}</p>
                       </div>
                     </div>
                   </details>
@@ -216,27 +261,116 @@ export default function NotificationsSettingsPage() {
 
         {/* Recent Activity Section */}
         <Card className="border-surface-border shadow-card">
-          <CardHeader>
-            <CardTitle className="text-base">Recent Activity</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base">Recent Activity</CardTitle>
+              <p className="text-xs text-text-tertiary mt-0.5">
+                Sent notifications and delivery status logs
+              </p>
+            </div>
+            {sent.length > 0 && (
+              <Badge variant="outline" className="text-xs">
+                {sent.length} notifications logged
+              </Badge>
+            )}
           </CardHeader>
-          <CardContent className="space-y-2">
-            {sent.length === 0 && <p className="text-sm text-text-tertiary">No notifications sent yet.</p>}
-            {sent.slice(0, 10).map((n) => (
-              <div key={n.id} className="flex items-start gap-2 text-sm p-3 rounded-lg border border-surface-border bg-surface-base">
-                <Bell className="w-3.5 h-3.5 mt-0.5 text-text-tertiary shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-text-primary font-medium truncate">{n.title}</p>
-                  <p className="text-text-tertiary text-xs">
-                    to {n.recipientIdentifier} · {new Date(n.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                <Badge variant={n.read ? "default" : "secondary"} className="shrink-0">
-                  {n.read ? "Read" : "Unread"}
-                </Badge>
+          <CardContent className="space-y-3">
+            {sent.length === 0 ? (
+              <div className="text-center py-8 space-y-2">
+                <Bell className="w-8 h-8 text-text-tertiary mx-auto opacity-40" />
+                <p className="text-sm text-text-secondary">No notifications logged yet.</p>
+                <Button variant="outline" size="sm" onClick={() => resetToSeedData()} className="gap-1.5">
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Load Sample Notifications
+                </Button>
               </div>
-            ))}
+            ) : (
+              sent.slice(0, 10).map((n) => (
+                <div
+                  key={n.id}
+                  onClick={() => setSelectedNotification(n)}
+                  className="group flex flex-col sm:flex-row sm:items-start justify-between gap-3 text-sm p-3.5 rounded-lg border border-surface-border bg-surface-base hover:border-surface-border-strong hover:bg-surface-sunken/40 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5 text-primary">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-text-primary font-medium truncate">{n.title}</p>
+                        <Badge variant={n.read ? "secondary" : "default"} className="text-[10px] h-4 px-1.5">
+                          {n.read ? "Delivered (Read)" : "Delivered (Unread)"}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
+                        {n.body}
+                      </p>
+                      <p className="text-text-tertiary text-[11px] flex items-center gap-1.5 pt-0.5">
+                        <span>To: <strong className="text-text-secondary font-medium">{n.recipientIdentifier}</strong></span>
+                        <span>·</span>
+                        <span>{new Date(n.createdAt).toLocaleString()}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="sm:self-center shrink-0 flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-surface-border">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs gap-1.5 w-full sm:w-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedNotification(n);
+                      }}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      View Content
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
+
+        {/* View Notification Content Dialog */}
+        <Dialog open={!!selectedNotification} onOpenChange={(open) => !open && setSelectedNotification(null)}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                <Badge variant={selectedNotification?.read ? "secondary" : "default"} className="text-xs">
+                  {selectedNotification?.read ? "Read" : "Unread"}
+                </Badge>
+                <span className="text-xs text-text-tertiary flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {selectedNotification ? new Date(selectedNotification.createdAt).toLocaleString() : ""}
+                </span>
+              </div>
+              <DialogTitle className="text-lg font-semibold text-text-primary">
+                {selectedNotification?.title}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-text-tertiary">
+                Recipient: <span className="font-mono text-text-secondary">{selectedNotification?.recipientIdentifier}</span> ({selectedNotification?.org})
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2">
+              <div>
+                <label className="text-xs font-semibold text-text-tertiary uppercase tracking-wider block mb-1">
+                  Message Content
+                </label>
+                <div className="p-4 rounded-lg bg-surface-sunken border border-surface-border text-sm text-text-primary whitespace-pre-wrap leading-relaxed max-h-[350px] overflow-y-auto">
+                  {selectedNotification?.body}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="border-t border-surface-border pt-3">
+              <Button variant="default" size="sm" onClick={() => setSelectedNotification(null)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Create/Edit Trigger Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

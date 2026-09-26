@@ -38,6 +38,8 @@ import {
   Download,
   Building,
   Trash2,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 
 export default function ConferencesPage() {
@@ -51,7 +53,7 @@ export default function ConferencesPage() {
   const courses = useCoursesStore((s) => s.courses);
 
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("All Formats");
   const [modalOpen, setModalOpen] = useState(false);
 
   // New session state
@@ -80,7 +82,7 @@ export default function ConferencesPage() {
       c.title.toLowerCase().includes(search.toLowerCase()) ||
       c.courseTitle.toLowerCase().includes(search.toLowerCase()) ||
       c.instructorName.toLowerCase().includes(search.toLowerCase());
-    const matchesType = filterType === "all" || c.locationType === filterType;
+    const matchesType = filterType === "All Formats" || c.locationType === filterType;
     return matchesSearch && matchesType;
   });
 
@@ -156,28 +158,46 @@ export default function ConferencesPage() {
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
+        <div className="flex items-center gap-3 flex-wrap rounded-xl border border-surface-border bg-surface-sunken/40 p-3">
+          <div className="relative flex-1 min-w-55 sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-tertiary" />
             <Input
               placeholder="Search webinars, rooms, instructors..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
+              className="h-9 pl-9 bg-surface-base"
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Select value={filterType} onValueChange={(v) => setFilterType(v ?? "all")}>
-              <SelectTrigger className="w-40">
+          <div className="hidden sm:block h-6 w-px bg-surface-border" />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <SlidersHorizontal className="hidden sm:block w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <Select value={filterType} onValueChange={(v) => setFilterType(v ?? "All Formats")}>
+              <SelectTrigger size="sm" className="w-44 bg-surface-base">
                 <SelectValue placeholder="Format" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Formats</SelectItem>
+                <SelectItem value="All Formats">All Formats</SelectItem>
                 <SelectItem value="virtual">Virtual (Zoom/Teams)</SelectItem>
                 <SelectItem value="physical">Physical Room</SelectItem>
               </SelectContent>
             </Select>
+
+            {(search || filterType !== "All Formats") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 text-text-tertiary hover:text-text-primary"
+                onClick={() => {
+                  setSearch("");
+                  setFilterType("All Formats");
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </Button>
+            )}
           </div>
         </div>
 

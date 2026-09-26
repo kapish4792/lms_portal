@@ -80,7 +80,19 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-lg border border-surface-border bg-surface-base px-3 py-2 text-sm shadow-xs transition-all duration-200 outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-surface-sunken aria-invalid:border-danger aria-invalid:ring-2 aria-invalid:ring-danger/20 data-placeholder:text-text-tertiary data-[size=default]:min-h-10 data-[size=sm]:min-h-9 *:data-[slot=select-value]:flex *:data-[slot=select-value]:flex-1 *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 *:data-[slot=select-value]:text-left *:data-[slot=select-value]:break-words *:data-[slot=select-value]:whitespace-normal hover:border-brand-400 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex w-full items-center justify-between gap-2 rounded-lg border border-surface-border bg-surface-base px-3 py-2 text-sm shadow-xs transition-all duration-200 outline-none text-left cursor-pointer",
+        "hover:border-primary/50",
+        "focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20",
+        "focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20",
+        "data-focused:border-primary data-focused:ring-2 data-focused:ring-primary/20",
+        "data-open:border-primary data-open:ring-2 data-open:ring-primary/20",
+        "data-[state=open]:border-primary data-[state=open]:ring-2 data-[state=open]:ring-primary/20",
+        "data-[popup-open]:border-primary data-[popup-open]:ring-2 data-[popup-open]:ring-primary/20",
+        "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-surface-sunken",
+        "aria-invalid:border-danger aria-invalid:ring-2 aria-invalid:ring-danger/20",
+        "data-placeholder:text-text-tertiary data-[size=default]:min-h-10 data-[size=sm]:min-h-9",
+        "*:data-[slot=select-value]:flex *:data-[slot=select-value]:flex-1 *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 *:data-[slot=select-value]:text-left *:data-[slot=select-value]:break-words *:data-[slot=select-value]:whitespace-normal",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -159,7 +171,11 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex min-h-7 w-full cursor-default items-center gap-2 rounded-md px-2.5 py-1.5 pr-8 text-xs/relaxed outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex min-h-7 w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 pr-8 text-xs/relaxed outline-none select-none transition-colors",
+        "data-highlighted:bg-primary/10 data-highlighted:text-primary",
+        "focus:bg-primary/10 focus:text-primary",
+        "data-disabled:pointer-events-none data-disabled:opacity-50",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}
@@ -172,7 +188,7 @@ function SelectItem({
           <span className="pointer-events-none absolute right-2 flex items-center justify-center text-primary" />
         }
       >
-        <CheckIcon className="pointer-events-none size-3.5" />
+        <CheckIcon className="pointer-events-none size-3.5 text-primary" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )

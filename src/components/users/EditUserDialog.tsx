@@ -22,8 +22,9 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useUsersStore } from "@/lib/store/users-store";
-import type { DirectoryUser } from "@/lib/store/users-store";
+import type { DirectoryUser, UpdateUserInput } from "@/lib/store/users-store";
 import { useGroupsStore } from "@/lib/store/groups-store";
+import { useOrganizationsStore } from "@/lib/store/organizations-store";
 import type { Role } from "@/lib/mock/users";
 import { ROLE_LABELS } from "@/lib/permissions";
 
@@ -31,62 +32,97 @@ const DEPARTMENTS = ["Engineering", "Sales", "HR", "Finance"];
 const ASSIGNABLE_ROLES: Role[] = ["org-admin", "dept-head", "instructor", "manager", "learner"];
 const LMS_ADMIN_ROLE: Role = "lms-admin";
 
-export function AddUserDialog({
-  open,
-  onOpenChange,
-  org,
-}: {
+interface EditUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  org: string;
-}) {
-  const addUser = useUsersStore((s) => s.addUser);
-  const allGroups = useGroupsStore((s) => s.groups);
-  const groups = useMemo(() => allGroups.filter((g) => g.org === org && !g.rule), [allGroups, org]);
-  const updateGroup = useGroupsStore((s) => s.updateGroup);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [dob, setDob] = useState("");
-  const [autoPassword, setAutoPassword] = useState(true);
-  const [role, setRole] = useState<Role>("learner");
-  const [department, setDepartment] = useState<string>(DEPARTMENTS[0]);
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  user: DirectoryUser | null;
+  currentUserRole: string;
+  currentUserOrg: string;
+}
 
-  const lmsAdminExists = useUsersStore((s) => s.directory.some((u) => u.role === LMS_ADMIN_ROLE));
+export function EditUserDialog({
+  open,
+  onOpenChange,
+  user,
+  currentUserRole,
+  currentUserOrg,
+}: EditUserDialogProps) {
+  if (!open) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <EditUserFormContent
+        key={user?.id ?? "new"}
+        user={user}
+        currentUserRole={currentUserRole}
+        currentUserOrg={currentUserOrg}
+        onOpenChange={onOpenChange}
+      />
+    </Dialog>
+  );
+}
+
+interface EditUserFormContentProps {
+  user: DirectoryUser | null;
+  currentUserRole: string;
+  currentUserOrg: string;
+  onOpenChange: (open: boolean) => void;
+}
+
+function EditUserFormContent({
+  user,
+  currentUserRole,
+  currentUserOrg,
+  onOpenChange,
+}: EditUserFormContentProps) {
+  const addUser = useUsersStore((s) => s.addUser);
+  const updateUser = useUsersStore((s) => s.updateUser);
+  const allGroups = useGroupsStore((s) => s.groups);
+  const updateGroup = useGroupsStore((s) => s.updateGroup);
+  const organizations = useOrganizationsStore((s) => s.organizations);
+  const directory = useUsersStore((s) => s.directory);
+
+  const lmsAdminExists = useMemo(
+    () => directory.some((u) => u.role === LMS_ADMIN_ROLE && u.id !== user?.id),
+    [directory, user?.id]
+  );
   const assignableRoles = useMemo(
     () => (lmsAdminExists ? ASSIGNABLE_ROLES : [...ASSIGNABLE_ROLES, LMS_ADMIN_ROLE]),
     [lmsAdminExists]
   );
 
-  const reset = () => {
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setUsername("");
-    setDob("");
-    setAutoPassword(true);
-    setRole(lmsAdminExists ? "learner" : LMS_ADMIN_ROLE);
-    setDepartment(DEPARTMENTS[0]);
-    setSelectedGroupIds([]);
-  };
+  const isEditing = Boolean(user);
+  const isLmsAdmin = currentUserRole === "lms-admin" || currentUserRole === "super-admin";
 
-  const toggleGroup = (id: string) =>
-    setSelectedGroupIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const [firstName, setFirstName] = useState(user?.firstName ?? "");
+  const [lastName, setLastName] = useState(user?.lastName ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [username, setUsername] = useState(user?.username ?? "");
+  const [dob, setDob] = useState(user?.dob ?? "");
+  const [autoPassword, setAutoPassword] = useState(true);
+  const [role, setRole] = useState<Role>(user?.role ?? (lmsAdminExists ? "learner" : LMS_ADMIN_ROLE));
+  const [department, setDepartment] = useState<string>(user?.department ?? DEPARTMENTS[0]);
+  const [org, setOrg] = useState<string>(user?.org ?? currentUserOrg);
+  const [status, setStatus] = useState<"Active" | "Suspended">(user?.status ?? "Active");
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(user?.groupIds ?? []);
+
+  const groups = useMemo(
+    () => allGroups.filter((g) => g.org === org && !g.rule),
+    [allGroups, org]
+  );
 
   const canSubmit = firstName.trim() && lastName.trim() && email.trim() && username.trim();
 
   const handleSubmit = () => {
     if (!canSubmit) return;
     if (role === LMS_ADMIN_ROLE) {
-      const existingLmsAdmin = useUsersStore.getState().directory.find((u) => u.role === LMS_ADMIN_ROLE);
+      const existingLmsAdmin = directory.find((u) => u.role === LMS_ADMIN_ROLE && u.id !== user?.id);
       if (existingLmsAdmin) {
         alert("Only one LMS Administrator can exist. An LMS Admin already exists in the system.");
         return;
       }
     }
-    const user: Omit<DirectoryUser, "id" | "registeredAt" | "status"> = {
+    const patch: UpdateUserInput = {
       firstName,
       lastName,
       email,
@@ -94,26 +130,43 @@ export function AddUserDialog({
       role,
       department,
       org,
+      status,
       groupIds: selectedGroupIds,
       dob: dob || undefined,
     };
-    const newUserId = addUser(user);
-    selectedGroupIds.forEach((groupId) => {
-      const group = groups.find((g) => g.id === groupId);
-      if (group) updateGroup(groupId, { memberIds: [...group.memberIds, newUserId] });
-    });
-    reset();
+    if (user) {
+      updateUser(user.id, patch);
+    } else {
+      const newUserId = addUser({
+        firstName,
+        lastName,
+        email,
+        username,
+        role,
+        department,
+        org,
+        groupIds: selectedGroupIds,
+        dob: dob || undefined,
+      });
+      selectedGroupIds.forEach((groupId) => {
+        const group = groups.find((g) => g.id === groupId);
+        if (group) updateGroup(groupId, { memberIds: [...group.memberIds, newUserId] });
+      });
+    }
     onOpenChange(false);
   };
 
+  const toggleGroup = (id: string) =>
+    setSelectedGroupIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl sm:max-w-3xl p-6 sm:p-8 max-h-[90vh] flex flex-col">
+    <DialogContent className="max-w-2xl sm:max-w-3xl p-6 sm:p-8 max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Add User</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit User" : "Add User"}</DialogTitle>
           <DialogDescription>
-            This assigns the exact role and authorized modules the new user&apos;s
-            dedicated login will land on.
+            {isEditing
+              ? "Update the user's details, role, department, organization, and group assignments."
+              : "This assigns the exact role, personal details, and authorized modules for the user's dedicated login."}
           </DialogDescription>
         </DialogHeader>
 
@@ -195,7 +248,7 @@ export function AddUserDialog({
             </div>
 
             {/* Col 1: Department */}
-            <div className="space-y-1.5 md:col-span-2">
+            <div className="space-y-1.5">
               <Label>Department</Label>
               <Select value={department} onValueChange={(v) => setDepartment(v ?? DEPARTMENTS[0])}>
                 <SelectTrigger className="w-full">
@@ -211,14 +264,75 @@ export function AddUserDialog({
               </Select>
             </div>
 
-            {/* Auto-generate password switch (Full width) */}
-            <div className="md:col-span-2 flex items-center justify-between rounded-lg border border-surface-border px-3.5 py-3 bg-surface-sunken/40">
-              <div>
-                <p className="text-sm font-medium text-text-primary">Auto-generate password</p>
-                <p className="text-xs text-text-tertiary">Sent to the user&apos;s email on account creation</p>
+            {/* Col 2: Status (if editing) or Organization (if LMS admin) */}
+            {isEditing ? (
+              <div className="space-y-1.5">
+                <Label>Account Status</Label>
+                <Select value={status} onValueChange={(v) => setStatus(v as "Active" | "Suspended")}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Switch checked={autoPassword} onCheckedChange={(checked: boolean) => setAutoPassword(checked)} />
-            </div>
+            ) : isLmsAdmin ? (
+              <div className="space-y-1.5">
+                <Label>Organization</Label>
+                <Select value={org} onValueChange={(v) => setOrg(v ?? "")}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select organization..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.map((o) => (
+                      <SelectItem key={o.id} value={o.name}>
+                        {o.name} ({o.subdomain})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="space-y-1.5 opacity-60">
+                <Label>Organization</Label>
+                <Input value={org} disabled className="bg-surface-sunken" />
+              </div>
+            )}
+
+            {/* Organization for LMS Admin when editing */}
+            {isEditing && isLmsAdmin && (
+              <div className="space-y-1.5 md:col-span-2">
+                <Label>Organization</Label>
+                <Select value={org} onValueChange={(v) => setOrg(v ?? "")}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select organization..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.map((o) => (
+                      <SelectItem key={o.id} value={o.name}>
+                        {o.name} ({o.subdomain})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-text-tertiary">
+                  LMS Admin can move users across organizations
+                </p>
+              </div>
+            )}
+
+            {/* Auto-generate password switch (when adding user) */}
+            {!isEditing && (
+              <div className="md:col-span-2 flex items-center justify-between rounded-lg border border-surface-border px-3.5 py-3 bg-surface-sunken/40">
+                <div>
+                  <p className="text-sm font-medium text-text-primary">Auto-generate password</p>
+                  <p className="text-xs text-text-tertiary">A secure activation link and password will be emailed to the user.</p>
+                </div>
+                <Switch checked={autoPassword} onCheckedChange={(checked: boolean) => setAutoPassword(checked)} />
+              </div>
+            )}
 
             {/* Group Assignment (Full width) */}
             <div className="space-y-2 md:col-span-2 pt-1 border-t border-surface-border/60">
@@ -252,10 +366,9 @@ export function AddUserDialog({
             Cancel
           </Button>
           <Button className="flex-1 sm:flex-none" disabled={!canSubmit} onClick={handleSubmit}>
-            Add User
+            {isEditing ? "Save Changes" : "Add User"}
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
   );
 }

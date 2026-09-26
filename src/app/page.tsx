@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useCoursesStore, type Course } from "@/lib/store/courses-store";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useEnrollmentsStore } from "@/lib/store/enrollments-store";
 import { resolveCourseThumbnail, CATEGORY_THUMBNAILS } from "@/components/courses/CourseCard";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { motion } from "framer-motion";
+import { HomeHeader } from "@/components/home/HomeHeader";
+import { HomeFooter } from "@/components/home/HomeFooter";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
@@ -32,9 +35,7 @@ import {
   Play,
   PlayCircle,
   X,
-  ChevronRight,
   TrendingUp,
-  Globe2,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -45,8 +46,8 @@ export default function HomePage() {
   const getEnrollment = useEnrollmentsStore((s) => s.getEnrollment);
 
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [priceFilter, setPriceFilter] = useState<"all" | "free" | "paid">("all");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [priceFilter, setPriceFilter] = useState<"Any Price" | "Free" | "Paid">("Any Price");
   const [previewCourse, setPreviewCourse] = useState<Course | null>(null);
 
   const handleCourseAction = (course: Course) => {
@@ -62,7 +63,7 @@ export default function HomePage() {
   // Derive unique categories
   const categories = useMemo(() => {
     const list = Array.from(new Set(courses.map((c) => c.category).filter(Boolean)));
-    return ["all", ...list];
+    return ["All Categories", ...list];
   }, [courses]);
 
   // Filtered courses
@@ -75,11 +76,11 @@ export default function HomePage() {
         c.category.toLowerCase().includes(search.toLowerCase()) ||
         (c.objectives && c.objectives.some((obj) => obj.toLowerCase().includes(search.toLowerCase())));
 
-      const matchesCategory = selectedCategory === "all" || c.category === selectedCategory;
+      const matchesCategory = selectedCategory === "All Categories" || c.category === selectedCategory;
       const price = c.price ?? 0;
       const matchesPrice =
-        priceFilter === "all" ||
-        (priceFilter === "free" ? price === 0 : price > 0);
+        priceFilter === "Any Price" ||
+        (priceFilter === "Free" ? price === 0 : price > 0);
 
       return matchesSearch && matchesCategory && matchesPrice;
     });
@@ -87,83 +88,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-base text-text-primary selection:bg-primary/20">
-      {/* Top Announcement Bar */}
-      <div className="bg-primary px-4 py-2 text-center text-xs font-medium text-primary-foreground flex items-center justify-center gap-2">
-        <Sparkles className="w-3.5 h-3.5" />
-        <span>Spring Learning Festival: Enroll in any certified course and receive lifetime updates & 1-on-1 instructor Q&A.</span>
-        <a href="#catalog" className="underline font-bold hover:opacity-90 ml-1">
-          Explore Courses →
-        </a>
-      </div>
-
-      {/* Main Navigation Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-surface-border bg-surface-base/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          {/* Brand */}
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-sm group-hover:scale-105 transition-transform">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight">LMS Portal</span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold uppercase tracking-wider text-text-tertiary border border-surface-border rounded-sm px-1.5 py-0.5">
-                Academy
-              </span>
-            </div>
-          </Link>
-
-          {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-text-secondary">
-            <a href="#catalog" className="hover:text-text-primary transition-colors">
-              Available Courses
-            </a>
-            <a href="#features" className="hover:text-text-primary transition-colors">
-              Platform Features
-            </a>
-            <a href="#why-us" className="hover:text-text-primary transition-colors">
-              Why Choose Us
-            </a>
-            <a href="#pricing" className="hover:text-text-primary transition-colors">
-              Enterprise & Pricing
-            </a>
-          </nav>
-
-          {/* Action CTAs & Auth Routes */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <ThemeToggle />
-
-            {currentUser ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 font-medium"
-                render={<Link href={`/${currentUser.role}/dashboard`} />}
-              >
-                <span>Dashboard ({currentUser.name.split(" ")[0]})</span>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-text-secondary hover:text-text-primary font-medium"
-                  render={<Link href="/auth/login" />}
-                >
-                  Log In
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-xs"
-                  render={<Link href="/auth/signup" />}
-                >
-                  Get Started
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* Extracted Header Component */}
+      <HomeHeader />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-surface-border bg-linear-to-b from-surface-sunken/40 to-surface-base">
@@ -171,24 +97,49 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             {/* Left Column: Messaging */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary">
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary"
+              >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Next-Gen Workforce & Individual Learning</span>
-              </div>
+              </motion.div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-text-primary leading-[1.15]">
+              <motion.h1
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
+                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-text-primary leading-[1.15]"
+              >
                 Master High-Impact Skills with{" "}
-                <span className="bg-linear-to-r from-primary to-[color-mix(in_oklch,var(--primary),purple_30%)] bg-clip-text text-transparent">
+                <motion.span
+                  initial={{ opacity: 0, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 0.6, delay: 0.28, ease: "easeOut" }}
+                  className="bg-linear-to-r from-primary via-brand-600 to-[color-mix(in_oklch,var(--primary),purple_30%)] bg-clip-text text-transparent inline-block"
+                >
                   Verified Courses
-                </span>
-              </h1>
+                </motion.span>
+              </motion.h1>
 
-              <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.22, ease: "easeOut" }}
+                className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+              >
                 Elevate your career with industry-tailored courses. Learn through interactive video lectures, timestamped notes, accredited certifications, and live instructor Q&A.
-              </p>
+              </motion.p>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.32, ease: "easeOut" }}
+                className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2"
+              >
                 <Button
                   size="lg"
                   className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-6 text-base font-semibold shadow-md gap-2"
@@ -206,10 +157,15 @@ export default function HomePage() {
                 >
                   Create Learner Account
                 </Button>
-              </div>
+              </motion.div>
 
               {/* Trust badges */}
-              <div className="pt-6 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-text-tertiary">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.45, delay: 0.42 }}
+                className="pt-6 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-text-tertiary"
+              >
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   Instant course enrollment
@@ -222,11 +178,16 @@ export default function HomePage() {
                   <Award className="w-4 h-4 text-warning" />
                   Accredited certificates
                 </span>
-              </div>
+              </motion.div>
             </div>
 
             {/* Right Column: Hero Visual Card */}
-            <div className="lg:col-span-5">
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.55, delay: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
+              className="lg:col-span-5"
+            >
               <div className="relative mx-auto max-w-md lg:max-w-none">
                 {/* Glow backdrop */}
                 <div className="absolute -inset-2 rounded-3xl bg-linear-to-tr from-primary/30 to-brand-300/30 blur-2xl opacity-60" />
@@ -287,7 +248,7 @@ export default function HomePage() {
                   </div>
                 </Card>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -295,25 +256,27 @@ export default function HomePage() {
       {/* Available Courses To Purchase Section (#catalog) */}
       <section id="catalog" className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-600 mb-2">
-              <ShoppingBag className="w-4 h-4" /> Available For Purchase & Enrollment
+        <ScrollReveal>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-600 mb-2">
+                <ShoppingBag className="w-4 h-4" /> Available For Purchase & Enrollment
+              </div>
+              <h2 className="text-3xl font-extrabold tracking-tight text-text-primary">
+                Featured Academy Courses
+              </h2>
+              <p className="text-text-secondary text-sm mt-1 max-w-xl">
+                Choose from verified certification programs and deep-dive technical curriculums. Purchase individually or access with your team.
+              </p>
             </div>
-            <h2 className="text-3xl font-extrabold tracking-tight text-text-primary">
-              Featured Academy Courses
-            </h2>
-            <p className="text-text-secondary text-sm mt-1 max-w-xl">
-              Choose from verified certification programs and deep-dive technical curriculums. Purchase individually or access with your team.
-            </p>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-text-tertiary font-medium">
-              Showing {filteredCourses.length} of {courses.length} courses
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-text-tertiary font-medium">
+                Showing {filteredCourses.length} of {courses.length} courses
+              </span>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Filters and Search Bar */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 mb-8 p-4 rounded-2xl bg-surface-sunken border border-surface-border">
@@ -349,14 +312,14 @@ export default function HomePage() {
                     : "bg-surface-base text-text-secondary hover:text-text-primary border border-surface-border"
                 )}
               >
-                {cat === "all" ? "All Categories" : cat}
+                {cat === "All Categories" ? "All Categories" : cat}
               </button>
             ))}
           </div>
 
           {/* Price toggle */}
           <div className="flex items-center gap-1 bg-surface-base border border-surface-border rounded-lg p-1 shrink-0">
-            {(["all", "free", "paid"] as const).map((tier) => (
+            {(["Any Price", "Free", "Paid"] as const).map((tier) => (
               <button
                 key={tier}
                 onClick={() => setPriceFilter(tier)}
@@ -387,9 +350,13 @@ export default function HomePage() {
             const isEnrolled = !!enrollment;
 
             return (
-              <div
+              <motion.div
                 key={course.id}
-                className="group flex flex-col justify-between bg-surface-base rounded-2xl border border-surface-border overflow-hidden hover:shadow-xl hover:border-primary/40 transition-all duration-300"
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "0px 0px -20px 0px" }}
+                transition={{ duration: 0.32, ease: "easeOut" }}
+                className="group flex flex-col justify-between bg-surface-base rounded-2xl border border-surface-border overflow-hidden hover:shadow-xl hover:border-primary/40 transition-colors duration-300"
               >
                 <div>
                   {/* 1. MEDIA THUMBNAIL (16:9 Aspect Ratio) */}
@@ -543,7 +510,7 @@ export default function HomePage() {
                     </Button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
 
@@ -559,8 +526,8 @@ export default function HomePage() {
                 size="sm"
                 onClick={() => {
                   setSearch("");
-                  setSelectedCategory("all");
-                  setPriceFilter("all");
+                  setSelectedCategory("All Categories");
+                  setPriceFilter("Any Price");
                 }}
               >
                 Reset Filters
@@ -573,20 +540,22 @@ export default function HomePage() {
       {/* Platform Features Section */}
       <section id="features" className="py-20 border-t border-surface-border bg-surface-sunken/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <Badge variant="outline" className="text-primary border-primary/30 font-semibold text-xs">
-              ENGINEERED FOR EXCELLENCE
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-text-primary">
-              Everything You Need for Serious Learning
-            </h2>
-            <p className="text-text-secondary text-sm sm:text-base">
-              Say goodbye to shallow tutorials. Our platform gives you enterprise-grade tooling designed for real knowledge acquisition and retention.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+              <Badge variant="outline" className="text-primary border-primary/30 font-semibold text-xs">
+                ENGINEERED FOR EXCELLENCE
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-text-primary">
+                Everything You Need for Serious Learning
+              </h2>
+              <p className="text-text-secondary text-sm sm:text-base">
+                Say goodbye to shallow tutorials. Our platform gives you enterprise-grade tooling designed for real knowledge acquisition and retention.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="p-6 rounded-2xl bg-surface-base border border-surface-border shadow-xs space-y-3">
+            <ScrollReveal delay={0.05} className="p-6 rounded-2xl bg-surface-base border border-surface-border shadow-xs space-y-3">
               <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
                 <Video className="w-6 h-6" />
               </div>
@@ -594,9 +563,9 @@ export default function HomePage() {
               <p className="text-xs text-text-secondary leading-relaxed">
                 Adaptive HLS streaming with instant keyboard shortcuts, speed control up to 2x, and timestamped personal notes.
               </p>
-            </div>
+            </ScrollReveal>
 
-            <div className="p-6 rounded-2xl bg-surface-base border border-surface-border shadow-xs space-y-3">
+            <ScrollReveal delay={0.1} className="p-6 rounded-2xl bg-surface-base border border-surface-border shadow-xs space-y-3">
               <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
                 <Award className="w-6 h-6" />
               </div>
@@ -604,9 +573,9 @@ export default function HomePage() {
               <p className="text-xs text-text-secondary leading-relaxed">
                 Pass interactive evaluations to earn verifiable digital credentials ready to share with employers and recruiters.
               </p>
-            </div>
+            </ScrollReveal>
 
-            <div className="p-6 rounded-2xl bg-surface-base border border-surface-border shadow-xs space-y-3">
+            <ScrollReveal delay={0.15} className="p-6 rounded-2xl bg-surface-base border border-surface-border shadow-xs space-y-3">
               <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold">
                 <Users className="w-6 h-6" />
               </div>
@@ -614,9 +583,9 @@ export default function HomePage() {
               <p className="text-xs text-text-secondary leading-relaxed">
                 Direct community discussions per lesson with verified instructor replies and helpful community upvoting.
               </p>
-            </div>
+            </ScrollReveal>
 
-            <div className="p-6 rounded-2xl bg-surface-base border border-surface-border shadow-xs space-y-3">
+            <ScrollReveal delay={0.2} className="p-6 rounded-2xl bg-surface-base border border-surface-border shadow-xs space-y-3">
               <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center font-bold">
                 <TrendingUp className="w-6 h-6" />
               </div>
@@ -624,7 +593,7 @@ export default function HomePage() {
               <p className="text-xs text-text-secondary leading-relaxed">
                 Sequential progression that guides you step-by-step from foundational concepts to advanced production architecture.
               </p>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -632,142 +601,150 @@ export default function HomePage() {
       {/* Pricing / Access Tiers Section */}
       <section id="pricing" className="py-20 border-t border-surface-border bg-surface-base">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-text-primary">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-text-secondary text-sm sm:text-base">
-              Purchase individual courses for lifetime access or power your entire organization.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-text-primary">
+                Simple, Transparent Pricing
+              </h2>
+              <p className="text-text-secondary text-sm sm:text-base">
+                Purchase individual courses for lifetime access or power your entire organization.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Tier 1: Single Course */}
-            <Card className="border-surface-border p-6 flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <Badge variant="outline" className="text-xs font-semibold">Individual</Badge>
-                <h3 className="text-xl font-bold">Course Purchase</h3>
-                <p className="text-xs text-text-secondary">
-                  Pay once for any course and get lifetime on-demand access.
-                </p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold">$39-$129</span>
-                  <span className="text-xs text-text-tertiary">/ one-time</span>
+            <ScrollReveal delay={0.05}>
+              <Card className="border-surface-border p-6 flex flex-col justify-between space-y-6 h-full">
+                <div className="space-y-4">
+                  <Badge variant="outline" className="text-xs font-semibold">Individual</Badge>
+                  <h3 className="text-xl font-bold">Course Purchase</h3>
+                  <p className="text-xs text-text-secondary">
+                    Pay once for any course and get lifetime on-demand access.
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold">$39-$129</span>
+                    <span className="text-xs text-text-tertiary">/ one-time</span>
+                  </div>
+                  <ul className="text-xs text-text-secondary space-y-2 pt-2">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      Lifetime access to selected course
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      Digital Certificate upon completion
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      Lesson Q&A with instructors
+                    </li>
+                  </ul>
                 </div>
-                <ul className="text-xs text-text-secondary space-y-2 pt-2">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    Lifetime access to selected course
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    Digital Certificate upon completion
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    Lesson Q&A with instructors
-                  </li>
-                </ul>
-              </div>
 
-              <Button
-                variant="outline"
-                className="w-full font-semibold"
-                render={<a href="#catalog" />}
-              >
-                Browse Catalog
-              </Button>
-            </Card>
+                <Button
+                  variant="outline"
+                  className="w-full font-semibold"
+                  render={<a href="#catalog" />}
+                >
+                  Browse Catalog
+                </Button>
+              </Card>
+            </ScrollReveal>
 
             {/* Tier 2: All Access Pro (Popular) */}
-            <Card className="border-primary relative p-6 flex flex-col justify-between space-y-6 shadow-xl ring-2 ring-primary/20 overflow-visible">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                <Badge className="bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider px-3 py-1.5 shadow-lg">
-                  Most Popular
-                </Badge>
-              </div>
-
-              <div className="space-y-4 pt-2">
-                <Badge variant="outline" className="text-xs font-semibold text-primary">All-Access</Badge>
-                <h3 className="text-xl font-bold">Learner Pro</h3>
-                <p className="text-xs text-text-secondary">
-                  Unlimited access to all courses, learning tracks, and upcoming releases.
-                </p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold">$29</span>
-                  <span className="text-xs text-text-tertiary">/ month</span>
+            <ScrollReveal delay={0.1}>
+              <Card className="border-primary relative p-6 flex flex-col justify-between space-y-6 shadow-xl ring-2 ring-primary/20 overflow-visible h-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                  <Badge className="bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider px-3 py-1.5 shadow-lg">
+                    Most Popular
+                  </Badge>
                 </div>
-                <ul className="text-xs text-text-secondary space-y-2 pt-2">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    Access to 200+ courses & tracks
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    All professional certifications
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    Interactive labs & source code
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    Priority instructor feedback
-                  </li>
-                </ul>
-              </div>
 
-              <Button
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
-                render={<Link href="/auth/signup" />}
-              >
-                Start 7-Day Free Trial
-              </Button>
-            </Card>
+                <div className="space-y-4 pt-2">
+                  <Badge variant="outline" className="text-xs font-semibold text-primary">All-Access</Badge>
+                  <h3 className="text-xl font-bold">Learner Pro</h3>
+                  <p className="text-xs text-text-secondary">
+                    Unlimited access to all courses, learning tracks, and upcoming releases.
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold">$29</span>
+                    <span className="text-xs text-text-tertiary">/ month</span>
+                  </div>
+                  <ul className="text-xs text-text-secondary space-y-2 pt-2">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      Access to 200+ courses & tracks
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      All professional certifications
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      Interactive labs & source code
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      Priority instructor feedback
+                    </li>
+                  </ul>
+                </div>
+
+                <Button
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                  render={<Link href="/auth/signup" />}
+                >
+                  Start 7-Day Free Trial
+                </Button>
+              </Card>
+            </ScrollReveal>
 
             {/* Tier 3: Enterprise */}
-            <Card className="border-surface-border p-6 flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <Badge variant="outline" className="text-xs font-semibold">Organizations</Badge>
-                <h3 className="text-xl font-bold">Enterprise Team</h3>
-                <p className="text-xs text-text-secondary">
-                  Dedicated tenant, compliance tracking, and automated onboarding.
-                </p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold">$49</span>
-                  <span className="text-xs text-text-tertiary">/ seat / month</span>
+            <ScrollReveal delay={0.15}>
+              <Card className="border-surface-border p-6 flex flex-col justify-between space-y-6 h-full">
+                <div className="space-y-4">
+                  <Badge variant="outline" className="text-xs font-semibold">Organizations</Badge>
+                  <h3 className="text-xl font-bold">Enterprise Team</h3>
+                  <p className="text-xs text-text-secondary">
+                    Dedicated tenant, compliance tracking, and automated onboarding.
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold">$49</span>
+                    <span className="text-xs text-text-tertiary">/ seat / month</span>
+                  </div>
+                  <ul className="text-xs text-text-secondary space-y-2 pt-2">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      Centralized manager dashboard
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      SSO (SAML, Okta, Azure AD)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      SCORM / xAPI export & reports
+                    </li>
+                  </ul>
                 </div>
-                <ul className="text-xs text-text-secondary space-y-2 pt-2">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    Centralized manager dashboard
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    SSO (SAML, Okta, Azure AD)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    SCORM / xAPI export & reports
-                  </li>
-                </ul>
-              </div>
 
-              <Button
-                variant="outline"
-                className="w-full font-semibold"
-                render={<Link href="/auth/login" />}
-              >
-                Contact Enterprise Sales
-              </Button>
-            </Card>
+                <Button
+                  variant="outline"
+                  className="w-full font-semibold"
+                  render={<Link href="/auth/login" />}
+                >
+                  Contact Enterprise Sales
+                </Button>
+              </Card>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
       {/* Global Call to Action Banner */}
       <section className="py-16 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10">
+        <ScrollReveal className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative z-10">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             Ready to Take Your Skills to the Next Level?
           </h2>
@@ -791,7 +768,7 @@ export default function HomePage() {
               Log In to Existing Account
             </Button>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* Course Quick Preview Modal */}
@@ -903,60 +880,8 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Comprehensive Footer */}
-      <footer className="border-t border-surface-border bg-surface-sunken py-12 text-sm text-text-secondary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div className="space-y-3">
-              <h4 className="font-bold text-text-primary text-sm">Course Catalog</h4>
-              <ul className="space-y-2 text-xs">
-                <li><a href="#catalog" className="hover:text-text-primary">Technical Skills</a></li>
-                <li><a href="#catalog" className="hover:text-text-primary">Executive Leadership</a></li>
-                <li><a href="#catalog" className="hover:text-text-primary">Compliance & Ethics</a></li>
-                <li><a href="#catalog" className="hover:text-text-primary">Sales Enablement</a></li>
-              </ul>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-bold text-text-primary text-sm">Authentication & Access</h4>
-              <ul className="space-y-2 text-xs">
-                <li><Link href="/auth/login" className="hover:text-text-primary">Log In</Link></li>
-                <li><Link href="/auth/signup" className="hover:text-text-primary">Sign Up & Buy Course</Link></li>
-                <li><Link href="/auth/forgot-password" className="hover:text-text-primary">Forgot / Reset Password</Link></li>
-              </ul>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-bold text-text-primary text-sm">Enterprise</h4>
-              <ul className="space-y-2 text-xs">
-                <li><a href="#pricing" className="hover:text-text-primary">Bulk Seat Licensing</a></li>
-                <li><Link href="/auth/login" className="hover:text-text-primary">Single Sign-On (SAML)</Link></li>
-                <li><a href="#features" className="hover:text-text-primary">SOC-2 & GDPR Compliance</a></li>
-              </ul>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-bold text-text-primary text-sm">LMS Portal</h4>
-              <p className="text-xs text-text-tertiary">
-                Delivering high-retention education for teams and independent learners globally.
-              </p>
-              <div className="flex items-center gap-2 pt-1">
-                <Globe2 className="w-4 h-4 text-text-tertiary" />
-                <span className="text-xs text-text-tertiary">English (US)</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-surface-border pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-text-tertiary gap-2">
-            <p>© 2026 LMS Portal Inc. All rights reserved.</p>
-            <div className="flex gap-4">
-              <span className="hover:underline cursor-pointer">Privacy Policy</span>
-              <span className="hover:underline cursor-pointer">Terms of Service</span>
-              <span className="hover:underline cursor-pointer">Security Safeguards</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Extracted Footer Component */}
+      <HomeFooter />
     </div>
   );
 }
