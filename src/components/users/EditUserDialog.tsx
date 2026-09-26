@@ -47,8 +47,6 @@ export function EditUserDialog({
   currentUserRole,
   currentUserOrg,
 }: EditUserDialogProps) {
-  if (!open) return null;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <EditUserFormContent

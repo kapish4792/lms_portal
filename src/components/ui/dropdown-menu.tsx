@@ -13,8 +13,24 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
   return <MenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
 }
 
-function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
-  return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
+function DropdownMenuTrigger({
+  render,
+  children,
+  ...props
+}: MenuPrimitive.Trigger.Props & { asChild?: boolean }) {
+  // If a single React element (e.g. <Button> or <button>) is passed as a child without render prop,
+  // use it as the render prop to prevent Base UI from nesting <button> inside <button>.
+  const triggerRender = render ?? (React.isValidElement(children) ? children : undefined);
+
+  return (
+    <MenuPrimitive.Trigger
+      data-slot="dropdown-menu-trigger"
+      render={triggerRender}
+      {...props}
+    >
+      {triggerRender ? undefined : children}
+    </MenuPrimitive.Trigger>
+  );
 }
 
 function DropdownMenuContent({
