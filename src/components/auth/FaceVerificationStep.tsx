@@ -10,8 +10,11 @@ import {
   ScanFace,
   Sparkles,
   RefreshCw,
+  Camera,
+  Check,
 } from "lucide-react";
 import type { MockUser } from "@/lib/mock/users";
+import { useUsersStore } from "@/lib/store/users-store";
 import { startCameraStream, stopAllCameraStreams, attachStreamToVideo } from "@/lib/camera";
 
 interface FaceVerificationStepProps {
@@ -20,17 +23,17 @@ interface FaceVerificationStepProps {
   onCancel: () => void;
 }
 
-type ScanStatus = "idle" | "requesting" | "aligning" | "analyzing" | "verified" | "error";
-
 export function FaceVerificationStep({
   user,
   onSuccess,
   onCancel,
 }: FaceVerificationStepProps) {
-  const [scanStatus, setScanStatus] = useState<ScanStatus>("requesting");
-  const [cameraPermissionGranted, setCameraPermissionGranted] = useState<boolean | null>(null);
-  const [statusMessage, setStatusMessage] = useState("Activating device camera sensor...");
-  const [matchPercentage, setMatchPercentage] = useState(0);
+  const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [faceImage, setFaceImage] = useState<string | null>(null);
+  const [scanStage, setScanStage] = useState<number>(0); // 0: Init, 1: Detect, 2: Mesh, 3: Liveness, 4: Verified
+  const [progress, setProgress] = useState<number>(12);
+  const [statusMessage, setStatusMessage] = useState("Initializing biometric optical sensor...");
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const scanTimerRef = useRef<NodeJS.Timeout[]>([]);
@@ -40,39 +43,143 @@ export function FaceVerificationStep({
     scanTimerRef.current.forEach(clearTimeout);
     scanTimerRef.current = [];
     stopAllCameraStreams(videoRef.current);
+    setIsCameraActive(false);
+  };
+
+  // 1. Resolve or synthesize the learner's face photo for visible simulation
+  useEffect(() => {
+    // Check if user has direct facePhoto
+    if (user.facePhoto) {
+      setFaceImage(user.facePhoto);
+      return;
+    }
+
+    // Check localStorage cache from signup
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(`essci_face_biometric_${user.identifier.toLowerCase()}`);
+      if (stored) {
+        setFaceImage(stored);
+        return;
+      }
+    }
+
+    // Check Users directory store
+    const dirUser = useUsersStore
+      .getState()
+      .directory.find((u) => u.email.toLowerCase() === user.identifier.toLowerCase());
+    if (dirUser?.facePhoto) {
+      setFaceImage(dirUser.facePhoto);
+      return;
+    }
+
+    // Generate high-contrast biometric simulation canvas face matching signup style
+    if (typeof document !== "undefined") {
+      const canvas = document.createElement("canvas");
+      canvas.width = 400;
+      canvas.height = 400;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        // High-contrast biometric gradient backdrop
+        const grad = ctx.createLinearGradient(0, 0, 400, 400);
+        grad.addColorStop(0, "#01458E");
+        grad.addColorStop(0.5, "#0d2b45");
+        grad.addColorStop(1, "#081d33");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 400, 400);
+
+        // Biometric scanning reticle ring
+        ctx.strokeStyle = "rgba(0, 229, 255, 0.4)";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(200, 160, 95, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Realistic face silhouette head
+        ctx.fillStyle = "#e2e8f0";
+        ctx.beginPath();
+        ctx.arc(200, 160, 68, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath();
+        ctx.arc(174, 150, 6, 0, Math.PI * 2);
+        ctx.arc(226, 150, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyebrows
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(164, 138);
+        ctx.lineTo(184, 139);
+        ctx.moveTo(216, 139);
+        ctx.lineTo(236, 138);
+        ctx.stroke();
+
+        // Nose
+        ctx.strokeStyle = "#94a3b8";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(200, 148);
+        ctx.lineTo(196, 172);
+        ctx.lineTo(204, 172);
+        ctx.stroke();
+
+        // Friendly smile
+        ctx.strokeStyle = "#0f172a";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(200, 182, 20, 0.2 * Math.PI, 0.8 * Math.PI);
+        ctx.stroke();
+
+        // Shoulders
+        ctx.fillStyle = "#94a3b8";
+        ctx.beginPath();
+        ctx.arc(200, 370, 130, Math.PI, 0);
+        ctx.fill();
+
+        setFaceImage(canvas.toDataURL("image/jpeg", 0.9));
+      }
+    }
+  }, [user]);
+
+  // 2. Camera activation and verification pipeline lifecycle
+  const openCamera = async () => {
+    setCameraError(null);
+    setStatusMessage("Opening device camera...");
+
+    const res = await startCameraStream(videoRef.current, {
+      facingMode: "user",
+      width: 640,
+      height: 480,
+    });
+
+    if (res.success && res.stream) {
+      setIsCameraActive(true);
+      if (videoRef.current) {
+        attachStreamToVideo(videoRef.current, res.stream);
+      }
+    } else {
+      setIsCameraActive(false);
+      if (res.error !== "Session superseded") {
+        setCameraError(res.error || "Device camera unavailable. Using biometric simulation.");
+      }
+    }
   };
 
   useEffect(() => {
     let isCancelled = false;
 
-    const initCamera = async () => {
-      setScanStatus("requesting");
-      setStatusMessage("Opening device camera...");
-
-      const res = await startCameraStream(videoRef.current, {
-        facingMode: "user",
-        width: 640,
-        height: 480,
-      });
-
-      if (isCancelled) {
-        teardownCamera();
-        return;
+    const init = async () => {
+      await openCamera();
+      if (!isCancelled) {
+        runVerificationPipeline();
       }
-
-      if (res.success && res.stream) {
-        setCameraPermissionGranted(true);
-        if (videoRef.current) {
-          attachStreamToVideo(videoRef.current, res.stream);
-        }
-      } else {
-        setCameraPermissionGranted(false);
-      }
-
-      runVerificationPipeline();
     };
 
-    initCamera();
+    init();
 
     const handleBeforeUnload = () => {
       teardownCamera();
@@ -87,35 +194,42 @@ export function FaceVerificationStep({
   }, []);
 
   const runVerificationPipeline = () => {
-    // Stage 1: Aligning (0.5s)
+    // Stage 1: Face Detection & Alignment (0.6s)
     const t1 = setTimeout(() => {
-      setScanStatus("aligning");
-      setStatusMessage("Face detected. Aligning facial geometry inside frame...");
-      setMatchPercentage(48);
-    }, 500);
+      setScanStage(1);
+      setProgress(35);
+      setStatusMessage("Face detected in box. Locking facial alignment...");
+    }, 600);
 
-    // Stage 2: Analyzing geometry & liveness (1.6s)
+    // Stage 2: 128-Point Landmark Extraction (1.8s)
     const t2 = setTimeout(() => {
-      setScanStatus("analyzing");
-      setStatusMessage("Scanning biometric landmarks & liveness...");
-      setMatchPercentage(88);
-    }, 1600);
+      setScanStage(2);
+      setProgress(68);
+      setStatusMessage("Extracting 128-point biometric facial triangulation mesh...");
+    }, 1800);
 
-    // Stage 3: Match verification (3.0s)
+    // Stage 3: Liveness & Optical Telemetry Check (3.0s)
     const t3 = setTimeout(() => {
-      setMatchPercentage(99.6);
-      setScanStatus("verified");
-      setStatusMessage(`Identity Confirmed: ${user.name} (ESSCI Verified)`);
-
-      // Stage 4: Clean up camera hardware first, then trigger success callback
-      const t4 = setTimeout(() => {
-        teardownCamera();
-        onSuccess();
-      }, 800);
-      scanTimerRef.current.push(t4);
+      setScanStage(3);
+      setProgress(92);
+      setStatusMessage("Verifying liveness & anti-spoofing micro-reflections...");
     }, 3000);
 
-    scanTimerRef.current.push(t1, t2, t3);
+    // Stage 4: Match Confirmation (4.2s)
+    const t4 = setTimeout(() => {
+      setScanStage(4);
+      setProgress(100);
+      setStatusMessage(`Identity Confirmed: ${user.name} (ESSCI 100% Match)`);
+
+      // Stage 5: Clean up hardware tracks first, then trigger redirect
+      const t5 = setTimeout(() => {
+        teardownCamera();
+        onSuccess();
+      }, 900);
+      scanTimerRef.current.push(t5);
+    }, 4200);
+
+    scanTimerRef.current.push(t1, t2, t3, t4);
   };
 
   const handleCancel = () => {
@@ -125,12 +239,12 @@ export function FaceVerificationStep({
 
   const handleFastTrack = () => {
     teardownCamera();
-    setMatchPercentage(100);
-    setScanStatus("verified");
+    setScanStage(4);
+    setProgress(100);
     setStatusMessage(`Identity Confirmed: ${user.name}`);
     setTimeout(() => {
       onSuccess();
-    }, 250);
+    }, 300);
   };
 
   return (
@@ -148,12 +262,12 @@ export function FaceVerificationStep({
           Biometric Face Scan
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm text-text-secondary">
-          Please keep your face centered within the oval frame.
+          Scanning your facial geometry to securely authorize learner login.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4 pt-1">
-        {/* Learner ID Badge - Clean text & icon, NO stored photo */}
+        {/* Learner ID Badge */}
         <div className="p-3 rounded-xl bg-surface-sunken border border-surface-border/80 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
@@ -176,76 +290,71 @@ export function FaceVerificationStep({
           </div>
         </div>
 
-        {/* Viewfinder / Live Camera Box with Perfectly Centered Biometric Frame */}
-        <div className="relative w-full aspect-4/3 max-w-[360px] mx-auto rounded-2xl overflow-hidden bg-slate-950 border-2 border-primary/50 shadow-2xl flex items-center justify-center">
-          {/* Layer 0: Standby Background Wireframe (Co-located with oval reticle) */}
-          <div className="absolute inset-0 z-0 flex flex-col items-center justify-center bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-300">
-            {/* Realistic Biometric Human Face Outline strictly within the oval */}
-            <div className="w-44 h-56 flex items-center justify-center relative">
-              <svg
-                viewBox="0 0 200 260"
-                className="w-40 h-52 text-cyan-400 drop-shadow-[0_0_10px_#00e5ff]"
-                fill="none"
-                stroke="currentColor"
-              >
-                {/* Head / Jawline Contour */}
-                <path
-                  d="M 40,85 C 40,25 160,25 160,85 C 160,150 145,215 100,235 C 55,215 40,150 40,85 Z"
-                  strokeWidth="2.5"
-                  strokeDasharray="6 4"
-                  className="opacity-80"
-                />
-                {/* Eyes */}
-                <circle cx="75" cy="95" r="9" strokeWidth="2" />
-                <circle cx="125" cy="95" r="9" strokeWidth="2" />
-                <circle cx="75" cy="95" r="3.5" fill="#00e5ff" className="animate-pulse" />
-                <circle cx="125" cy="95" r="3.5" fill="#00e5ff" className="animate-pulse" />
-                {/* Eyebrows */}
-                <path d="M 62,82 Q 75,76 88,82" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 112,82 Q 125,76 138,82" strokeWidth="2" strokeLinecap="round" />
-                {/* Nose Bridge and Tip */}
-                <path d="M 100,92 L 96,132 L 106,132" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                {/* Lips */}
-                <path d="M 80,165 Q 100,178 120,165" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 86,168 Q 100,172 114,168" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
-                {/* Biometric Landmark Target Points */}
-                <circle cx="100" cy="50" r="3" fill="#00e5ff" />
-                <circle cx="50" cy="120" r="3" fill="#00e5ff" />
-                <circle cx="150" cy="120" r="3" fill="#00e5ff" />
-                <circle cx="100" cy="205" r="3" fill="#1ea838" />
-                {/* Cheek Nodes with Pulse */}
-                <circle cx="62" cy="135" r="3" fill="#00e5ff" className="animate-ping" />
-                <circle cx="138" cy="135" r="3" fill="#00e5ff" className="animate-ping" />
-              </svg>
-            </div>
-            <span className="text-[10px] font-mono text-cyan-300 uppercase tracking-widest font-bold -mt-2">
-              {cameraPermissionGranted ? "OPTICAL SENSOR ACTIVE" : "BIOMETRIC SENSOR READY"}
-            </span>
+        {/* Viewfinder / Live Camera Box with High-Tech Biometric Scanning Overlays */}
+        <div className="relative w-full aspect-4/3 max-w-[340px] mx-auto rounded-2xl overflow-hidden bg-slate-950 border-2 border-primary/50 shadow-2xl flex items-center justify-center">
+          {/* Layer 0: Visible Face Container (Visible during both Simulation and Camera Loading) */}
+          <div className="absolute inset-0 z-0 flex items-center justify-center bg-slate-950 overflow-hidden">
+            {faceImage ? (
+              <img
+                src={faceImage}
+                alt="Learner Biometric Face"
+                className="w-full h-full object-cover scale-105"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-linear-to-b from-slate-900 to-slate-950 text-slate-300">
+                <ScanFace className="w-16 h-16 text-cyan-400 animate-pulse" />
+              </div>
+            )}
           </div>
 
-          {/* Layer 10: Actual Live Video Feed (Rendered on top of Layer 0) */}
+          {/* Layer 10: Actual Live Video Feed (Always above Layer 0, shows live webcam when permitted) */}
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
             className={`absolute inset-0 z-10 w-full h-full object-cover scale-x-[-1] transition-opacity duration-300 ${
-              cameraPermissionGranted ? "opacity-100 block" : "opacity-0 pointer-events-none"
+              isCameraActive ? "opacity-100 block" : "opacity-0 pointer-events-none"
             }`}
           />
 
-          {/* Layer 20: Unified Face Oval Target Reticle & Laser Beam (Centered over face) */}
+          {/* Layer 20: Target Bounding Frame & Laser Bar Directly Over Face */}
           <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
-            {/* The Generously Proportioned Face Oval Box (Fits human face naturally) */}
+            {/* The Generously Proportioned Face Oval Box */}
             <div
               className={`relative w-44 h-56 rounded-[50%] transition-colors duration-300 flex items-center justify-center overflow-hidden ${
-                scanStatus === "verified"
-                  ? "border-2 border-emerald-400 shadow-[0_0_20px_rgba(30,168,56,0.6)]"
-                  : "border-2 border-dashed border-cyan-400/90 shadow-[0_0_15px_rgba(0,229,255,0.35)]"
+                scanStage >= 4
+                  ? "border-2 border-emerald-400 shadow-[0_0_25px_rgba(30,168,56,0.7)]"
+                  : "border-2 border-dashed border-cyan-400/90 shadow-[0_0_18px_rgba(0,229,255,0.4)]"
               }`}
             >
-              {/* Laser Scanning Line sweeps within the face oval */}
-              {scanStatus !== "verified" && (
+              {/* Dynamic Scanning Triangulation Mesh Nodes (Stage 2+) */}
+              {scanStage >= 2 && scanStage < 4 && (
+                <svg viewBox="0 0 176 224" className="absolute inset-0 w-full h-full text-cyan-400/70" fill="none">
+                  {/* Triangulation Lines across face */}
+                  <line x1="88" y1="35" x2="55" y2="85" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                  <line x1="88" y1="35" x2="121" y2="85" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                  <line x1="55" y1="85" x2="88" y2="120" stroke="currentColor" strokeWidth="1" />
+                  <line x1="121" y1="85" x2="88" y2="120" stroke="currentColor" strokeWidth="1" />
+                  <line x1="55" y1="85" x2="121" y2="85" stroke="currentColor" strokeWidth="1" />
+                  <line x1="55" y1="85" x2="40" y2="140" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+                  <line x1="121" y1="85" x2="136" y2="140" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+                  <line x1="88" y1="120" x2="88" y2="165" stroke="currentColor" strokeWidth="1" />
+                  <line x1="40" y1="140" x2="88" y2="165" stroke="currentColor" strokeWidth="1" />
+                  <line x1="136" y1="140" x2="88" y2="165" stroke="currentColor" strokeWidth="1" />
+                  {/* Glowing Landmark Nodes */}
+                  <circle cx="88" cy="35" r="3" fill="#00e5ff" className="animate-ping" />
+                  <circle cx="55" cy="85" r="3" fill="#00e5ff" />
+                  <circle cx="121" cy="85" r="3" fill="#00e5ff" />
+                  <circle cx="88" cy="120" r="3" fill="#1ea838" />
+                  <circle cx="40" cy="140" r="3" fill="#00e5ff" />
+                  <circle cx="136" cy="140" r="3" fill="#00e5ff" />
+                  <circle cx="88" cy="165" r="3" fill="#00e5ff" />
+                </svg>
+              )}
+
+              {/* Laser Scanning Line sweeps within the face oval directly over the user's face */}
+              {scanStage < 4 && (
                 <div className="absolute left-0 right-0 h-1 bg-linear-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_#00e5ff] animate-laser-scan" />
               )}
             </div>
@@ -259,70 +368,191 @@ export function FaceVerificationStep({
             </div>
           </div>
 
-          {/* Layer 30: Live HUD Badges */}
+          {/* Layer 30: Live Top HUD Badges */}
           <div className="absolute top-2.5 left-2.5 right-2.5 z-30 flex items-center justify-between text-[10px] font-mono text-white/95 bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 shadow-md">
             <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              OPTICAL SENSOR • 30 FPS
+              STAGE {scanStage}/4 • {isCameraActive ? "LIVE WEBCAM" : "AI OPTICAL SENSOR"}
             </span>
             <span className="text-cyan-400 font-bold">
-              {scanStatus === "verified" ? "CONFIRMED" : `MATCH: ${matchPercentage}%`}
+              {scanStage >= 4 ? "CONFIRMED" : `SCAN: ${progress}%`}
             </span>
           </div>
 
+          {/* Layer 30: Live Bottom Diagnostics HUD */}
+          {scanStage > 0 && scanStage < 4 && (
+            <div className="absolute bottom-2.5 left-2.5 right-2.5 z-30 flex items-center justify-between text-[9px] font-mono text-white/90 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md border border-cyan-400/20">
+              <span className="text-cyan-300">
+                {scanStage === 1 && "SCANNING GEOMETRIC BOUNDS..."}
+                {scanStage === 2 && "LANDMARKS: 128/128 MAPPED"}
+                {scanStage === 3 && "LIVENESS TELEMETRY: 99.8%"}
+              </span>
+              <span className="text-emerald-400 font-bold">FPS 30</span>
+            </div>
+          )}
+
           {/* Layer 40: Center Verified Overlay (Triggers only when confirmed) */}
-          {scanStatus === "verified" && (
+          {scanStage >= 4 && (
             <div className="absolute inset-0 z-40 bg-emerald-950/90 backdrop-blur-xs flex flex-col items-center justify-center text-white animate-in fade-in zoom-in-95 duration-200">
               <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/50 mb-2">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <span className="text-base font-bold tracking-tight">Identity Confirmed</span>
-              <span className="text-xs text-emerald-200 mt-0.5">Match: {matchPercentage}%</span>
+              <span className="text-xs text-emerald-200 mt-0.5">Biometric Match: 100%</span>
             </div>
           )}
         </div>
 
-        {/* Status Message and Diagnostics */}
-        <div className="text-center space-y-1">
-          <p className="text-xs font-semibold text-text-primary flex items-center justify-center gap-2">
-            {scanStatus === "verified" ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            ) : (
-              <RefreshCw className="w-3.5 h-3.5 text-primary animate-spin" />
-            )}
-            <span>{statusMessage}</span>
-          </p>
-          <p className="text-[11px] text-text-tertiary">
-            {scanStatus === "verified"
-              ? "Access granted. Launching learner workspace..."
-              : "Keep your face centered within the oval frame."}
-          </p>
+        {/* Real-Time Scanning Progress Bar with Status */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-text-primary font-semibold flex items-center gap-1.5 truncate">
+              {scanStage >= 4 ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              ) : (
+                <RefreshCw className="w-3.5 h-3.5 text-cyan-500 animate-spin shrink-0" />
+              )}
+              <span className="truncate">{statusMessage}</span>
+            </span>
+            <span className="font-bold text-cyan-600 dark:text-cyan-400 shrink-0">
+              {progress}%
+            </span>
+          </div>
+          <div className="h-2 w-full bg-surface-sunken border border-surface-border rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-300 rounded-full ${
+                scanStage >= 4
+                  ? "bg-emerald-500"
+                  : "bg-linear-to-r from-primary via-cyan-400 to-emerald-400"
+              }`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
 
-        {/* Actions & Fast-Track Button */}
-        <div className="flex items-center justify-between pt-2 border-t border-surface-border">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleCancel}
-            className="text-xs text-text-secondary hover:text-text-primary h-8 px-2 cursor-pointer"
+        {/* 4 Interactive Sequential Scanning Stage Pills */}
+        <div className="grid grid-cols-4 gap-1.5 pt-1">
+          <div
+            className={`p-1.5 rounded-lg border text-[10px] font-semibold flex flex-col items-center gap-1 transition-colors ${
+              scanStage >= 1
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "border-surface-border bg-surface-raised/30 text-text-tertiary"
+            }`}
           >
-            Cancel / Return to Login
-          </Button>
+            {scanStage >= 1 ? (
+              <Check className="w-3 h-3 text-emerald-500 stroke-[3]" />
+            ) : (
+              <div className="w-3 h-3 rounded-full border border-current flex items-center justify-center text-[8px]">
+                1
+              </div>
+            )}
+            <span className="leading-tight">Detect</span>
+          </div>
 
-          {scanStatus !== "verified" && (
+          <div
+            className={`p-1.5 rounded-lg border text-[10px] font-semibold flex flex-col items-center gap-1 transition-colors ${
+              scanStage >= 2
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "border-surface-border bg-surface-raised/30 text-text-tertiary"
+            }`}
+          >
+            {scanStage >= 2 ? (
+              <Check className="w-3 h-3 text-emerald-500 stroke-[3]" />
+            ) : (
+              <div className="w-3 h-3 rounded-full border border-current flex items-center justify-center text-[8px]">
+                2
+              </div>
+            )}
+            <span className="leading-tight">Mesh 128D</span>
+          </div>
+
+          <div
+            className={`p-1.5 rounded-lg border text-[10px] font-semibold flex flex-col items-center gap-1 transition-colors ${
+              scanStage >= 3
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "border-surface-border bg-surface-raised/30 text-text-tertiary"
+            }`}
+          >
+            {scanStage >= 3 ? (
+              <Check className="w-3 h-3 text-emerald-500 stroke-[3]" />
+            ) : (
+              <div className="w-3 h-3 rounded-full border border-current flex items-center justify-center text-[8px]">
+                3
+              </div>
+            )}
+            <span className="leading-tight">Liveness</span>
+          </div>
+
+          <div
+            className={`p-1.5 rounded-lg border text-[10px] font-semibold flex flex-col items-center gap-1 transition-colors ${
+              scanStage >= 4
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "border-surface-border bg-surface-raised/30 text-text-tertiary"
+            }`}
+          >
+            {scanStage >= 4 ? (
+              <Check className="w-3 h-3 text-emerald-500 stroke-[3]" />
+            ) : (
+              <div className="w-3 h-3 rounded-full border border-current flex items-center justify-center text-[8px]">
+                4
+              </div>
+            )}
+            <span className="leading-tight">Matched</span>
+          </div>
+        </div>
+
+        {/* Camera Toggle and Fast-Track Controls */}
+        <div className="flex items-center justify-between pt-2 border-t border-surface-border gap-2">
+          {!isCameraActive ? (
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={handleFastTrack}
-              className="text-xs font-medium h-8 px-2.5 gap-1.5 border-dashed border-primary/40 text-primary hover:bg-primary/5 cursor-pointer"
+              onClick={openCamera}
+              className="text-xs h-8 px-2.5 gap-1.5 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
             >
-              <Sparkles className="w-3 h-3" />
-              <span>Fast-Track Scan (Demo)</span>
+              <Camera className="w-3.5 h-3.5" />
+              <span>Turn On Webcam</span>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                teardownCamera();
+                runVerificationPipeline();
+              }}
+              className="text-xs text-text-secondary hover:text-text-primary h-8 px-2 cursor-pointer"
+            >
+              Use AI Simulation
             </Button>
           )}
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              className="text-xs text-text-secondary hover:text-text-primary h-8 px-2 cursor-pointer"
+            >
+              Cancel
+            </Button>
+
+            {scanStage < 4 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleFastTrack}
+                className="text-xs font-medium h-8 px-2.5 gap-1.5 border-dashed border-primary/40 text-primary hover:bg-primary/5 cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Fast-Track</span>
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
