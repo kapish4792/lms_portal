@@ -17,6 +17,8 @@ export interface DirectoryUser {
   registeredAt: string; // ISO date
   groupIds?: string[]; // Group.id in useGroupsStore
   dob?: string; // Date of birth (YYYY-MM-DD)
+  facePhoto?: string; // Base64 data URL from camera capture
+  biometricRegistered?: boolean;
 }
 
 export type UpdateUserInput = Partial<Omit<DirectoryUser, "id" | "registeredAt">>;

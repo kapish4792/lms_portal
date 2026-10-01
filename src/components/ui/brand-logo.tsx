@@ -11,8 +11,12 @@ interface BrandLogoProps {
   showSubtitle?: boolean;
   /** Whether the sidebar is collapsed (shows only mark) */
   isCollapsed?: boolean;
+  /** Invert text colors for dark or colored backgrounds (e.g. primary gradient) */
+  inverted?: boolean;
   /** Additional container styling */
   className?: string;
+  /** Custom logo capsule box styling */
+  boxClassName?: string;
   /** Custom text container styling */
   textClassName?: string;
 }
@@ -22,7 +26,9 @@ export function BrandLogo({
   showText = true,
   showSubtitle = true,
   isCollapsed = false,
+  inverted = false,
   className,
+  boxClassName,
   textClassName,
 }: BrandLogoProps) {
   const sizeConfig = {
@@ -58,7 +64,8 @@ export function BrandLogo({
       <div
         className={cn(
           "bg-white flex items-center justify-center shrink-0 shadow-xs border border-border/50 ring-1 ring-black/5 transition-transform duration-200 group-hover/brand:scale-105",
-          sizeConfig.box
+          sizeConfig.box,
+          boxClassName
         )}
       >
         <Image
@@ -74,11 +81,23 @@ export function BrandLogo({
       {/* Brand Text Details */}
       {showText && !isCollapsed && (
         <div className={cn("min-w-0 flex flex-col justify-center leading-tight", textClassName)}>
-          <span className={cn("font-black tracking-tight text-foreground truncate", sizeConfig.title)}>
+          <span
+            className={cn(
+              "font-black tracking-tight truncate",
+              inverted ? "text-white drop-shadow-xs" : "text-foreground",
+              sizeConfig.title
+            )}
+          >
             ESSCI
           </span>
           {showSubtitle && (
-            <span className={cn("font-bold text-primary truncate tracking-tight", sizeConfig.sub)}>
+            <span
+              className={cn(
+                "font-bold truncate tracking-tight",
+                inverted ? "text-cyan-200 font-semibold" : "text-primary",
+                sizeConfig.sub
+              )}
+            >
               Skilling India in Electronics
             </span>
           )}

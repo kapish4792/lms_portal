@@ -20,7 +20,14 @@ interface AuthState {
   directLogin: (identifier: string) => MockUser;
   startLogin: (identifier: string) => MockUser;
   verifyOtp: (code: string, trustDevice: boolean) => { success: boolean; error?: string };
-  registerLearner: (details: { email: string; name: string; org?: string; department?: string }) => MockUser;
+  registerLearner: (details: {
+    email: string;
+    name: string;
+    org?: string;
+    department?: string;
+    facePhoto?: string;
+    biometricRegistered?: boolean;
+  }) => MockUser;
   resetPassword: (identifier: string) => { success: boolean; error?: string };
   updateProfile: (patch: Partial<MockUser>) => void;
   setMfa: (enabled: boolean) => void;
@@ -110,8 +117,20 @@ export const useAuthStore = create<AuthState>()(
         return { success: true };
       },
 
-      registerLearner: ({ email, name, org = "ESSCI", department = "Individual" }) => {
+      registerLearner: ({
+        email,
+        name,
+        org = "ESSCI",
+        department = "Individual",
+        facePhoto,
+        biometricRegistered,
+      }) => {
         const normalized = email.trim().toLowerCase();
+        if (typeof window !== "undefined" && facePhoto) {
+          try {
+            localStorage.setItem(`essci_face_biometric_${normalized}`, facePhoto);
+          } catch {}
+        }
         const user: MockUser = {
           identifier: normalized,
           name: name.trim() || normalized.split("@")[0],
@@ -119,6 +138,8 @@ export const useAuthStore = create<AuthState>()(
           org,
           department,
           mfaEnrolled: false,
+          facePhoto,
+          biometricRegistered: biometricRegistered ?? Boolean(facePhoto),
         };
         const trustedDevices = { ...get().trustedDevices, [normalized]: Date.now() + TRUST_DEVICE_MS };
         set({

@@ -539,3 +539,23 @@
 .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: color-mix(in oklch, var(--primary) 70%, transparent);
 }
+
+/* Biometric Facial Recognition Laser Scanning Animation */
+@keyframes laser-scan {
+  0% {
+    top: 5%;
+    opacity: 0.75;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.75;
+  }
+}
+
+.animate-laser-scan {
+  animation: laser-scan 2.2s ease-in-out infinite;
+}

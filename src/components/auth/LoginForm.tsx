@@ -374,444 +374,444 @@ export default function LoginForm() {
           ) : (
             <Card className="border-surface-border shadow-card">
               <CardHeader className="text-center pb-4">
-              <CardTitle className="text-2xl font-bold text-text-primary">
-                {step === 1 && "Log in to continue your learning journey"}
-                {step === 2 && "Check your inbox"}
-                {step === "mfa" && "Two-Factor Authentication"}
-                {step === "sso" && "Log in with your organization"}
-              </CardTitle>
-              {step === 2 && (
-                <p className="text-text-secondary mt-2">
-                  Enter the 6-digit code we sent to <strong className="text-text-primary">{identifier}</strong> to finish your login.
-                </p>
-              )}
-              {step === "mfa" && (
-                <p className="text-text-secondary mt-2">
-                  This account requires MFA. Enter the 6-digit code from your authenticator app.
-                </p>
-              )}
-              {step === "sso" && (
-                <p className="text-text-secondary mt-2">
-                  Enter your work email or organization domain to continue with your
-                  identity provider (SAML 2.0, Okta, or Azure AD).
-                </p>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {error && (
-                <div className="flex items-start gap-2 rounded-lg border border-danger-200 bg-danger-50 dark:bg-danger-950/30 dark:border-danger-900 px-3 py-2 text-sm text-danger-700 dark:text-danger-300">
-                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              {locked && (
-                <div className="flex items-start gap-2 rounded-lg border border-danger-200 bg-danger-50 dark:bg-danger-950/30 dark:border-danger-900 px-3 py-2 text-sm text-danger-700 dark:text-danger-300">
-                  <Lock className="w-4 h-4 mt-0.5 shrink-0" />
-                  <span>
-                    Account temporarily locked. Try again in {lockoutMinutes}:
-                    {lockoutSeconds.toString().padStart(2, "0")}.
-                  </span>
-                </div>
-              )}
-
-              {step === 1 && (
-                <>
-                  {/* Quick 1-click demo logins */}
-                  <div className="rounded-xl border border-surface-border bg-surface-sunken/60 p-3 space-y-2">
-                    <div className="flex items-center justify-between text-xs font-semibold text-text-tertiary">
-                      <span className="flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-primary" /> Instant 1-Click Demo Login:
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleQuickLogin("lmsadmin@lms.dev")}
-                        className="py-1.5 px-2 text-xs font-bold rounded-lg bg-primary/15 text-primary hover:bg-primary/25 border border-primary/25 transition-all text-center"
-                      >
-                        LMS Admin (Alok)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleQuickLogin("admin@lms.dev")}
-                        className="py-1.5 px-2 text-xs font-semibold rounded-lg bg-surface-base hover:bg-surface-raised border border-surface-border text-text-primary transition-all text-center"
-                      >
-                        Org Admin (Rajeshwar)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleQuickLogin("instructor@lms.dev")}
-                        className="py-1.5 px-2 text-xs font-semibold rounded-lg bg-surface-base hover:bg-surface-raised border border-surface-border text-text-primary transition-all text-center"
-                      >
-                        Instructor (Priya)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleQuickLogin("learner@lms.dev")}
-                        className="py-1.5 px-2 text-xs font-semibold rounded-lg bg-surface-base hover:bg-surface-raised border border-surface-border text-text-primary transition-all text-center"
-                      >
-                        Learner (Rohan)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleQuickLogin("manager@lms.dev")}
-                        className="py-1.5 px-2 text-xs font-semibold rounded-lg bg-surface-base hover:bg-surface-raised border border-surface-border text-text-primary transition-all text-center"
-                      >
-                        Manager (Ananya)
-                      </button>
-                    </div>
+                <CardTitle className="text-2xl font-bold text-text-primary">
+                  {step === 1 && "Log in to continue your learning journey"}
+                  {step === 2 && "Check your inbox"}
+                  {step === "mfa" && "Two-Factor Authentication"}
+                  {step === "sso" && "Log in with your organization"}
+                </CardTitle>
+                {step === 2 && (
+                  <p className="text-text-secondary mt-2">
+                    Enter the 6-digit code we sent to <strong className="text-text-primary">{identifier}</strong> to finish your login.
+                  </p>
+                )}
+                {step === "mfa" && (
+                  <p className="text-text-secondary mt-2">
+                    This account requires MFA. Enter the 6-digit code from your authenticator app.
+                  </p>
+                )}
+                {step === "sso" && (
+                  <p className="text-text-secondary mt-2">
+                    Enter your work email or organization domain to continue with your
+                    identity provider (SAML 2.0, Okta, or Azure AD).
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {error && (
+                  <div className="flex items-start gap-2 rounded-lg border border-danger-200 bg-danger-50 dark:bg-danger-950/30 dark:border-danger-900 px-3 py-2 text-sm text-danger-700 dark:text-danger-300">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{error}</span>
                   </div>
+                )}
 
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="identifier" className="text-text-primary font-medium text-xs">
-                          Email, Username, or Role
-                        </Label>
-                        <Link
-                          href="/auth/forgot-password"
-                          className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                {locked && (
+                  <div className="flex items-start gap-2 rounded-lg border border-danger-200 bg-danger-50 dark:bg-danger-950/30 dark:border-danger-900 px-3 py-2 text-sm text-danger-700 dark:text-danger-300">
+                    <Lock className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>
+                      Account temporarily locked. Try again in {lockoutMinutes}:
+                      {lockoutSeconds.toString().padStart(2, "0")}.
+                    </span>
+                  </div>
+                )}
+
+                {step === 1 && (
+                  <>
+                    {/* Quick 1-click demo logins */}
+                    <div className="rounded-xl border border-surface-border bg-surface-sunken/60 p-3 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-semibold text-text-tertiary">
+                        <span className="flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5 text-primary" /> Instant 1-Click Demo Login:
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleQuickLogin("lmsadmin@lms.dev")}
+                          className="py-1.5 px-2 text-xs font-bold rounded-lg bg-primary/15 text-primary hover:bg-primary/25 border border-primary/25 transition-all text-center"
                         >
-                          Forgot password?
-                        </Link>
+                          LMS Admin
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickLogin("admin@lms.dev")}
+                          className="py-1.5 px-2 text-xs font-semibold rounded-lg bg-surface-base hover:bg-surface-raised border border-surface-border text-text-primary transition-all text-center"
+                        >
+                          Org Admin
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickLogin("instructor@lms.dev")}
+                          className="py-1.5 px-2 text-xs font-semibold rounded-lg bg-surface-base hover:bg-surface-raised border border-surface-border text-text-primary transition-all text-center"
+                        >
+                          Instructor
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickLogin("learner@lms.dev")}
+                          className="py-1.5 px-2 text-xs font-semibold rounded-lg bg-surface-base hover:bg-surface-raised border border-surface-border text-text-primary transition-all text-center"
+                        >
+                          Learner
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickLogin("manager@lms.dev")}
+                          className="py-1.5 px-2 text-xs font-semibold rounded-lg bg-surface-base hover:bg-surface-raised border border-surface-border text-text-primary transition-all text-center"
+                        >
+                          Manager
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="identifier" className="text-text-primary font-medium text-xs">
+                            Email, Username, or Role
+                          </Label>
+                          <Link
+                            href="/auth/forgot-password"
+                            className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                          >
+                            Forgot password?
+                          </Link>
+                        </div>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-4 h-4" />
+                          <Input
+                            id="identifier"
+                            type="text"
+                            placeholder="e.g. admin@lms.dev or learner@lms.dev"
+                            value={identifier}
+                            onChange={(e) => setIdentifier(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleContinue()}
+                            className="pl-9 pr-10"
+                            disabled={isLoading}
+                            autoComplete="email"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="password" className="text-text-primary font-medium text-xs">
+                          Password <span className="text-text-tertiary font-normal">(Optional for Demo)</span>
+                        </Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-4 h-4" />
+                          <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter password or leave empty for OTP"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleContinue()}
+                            className="pl-9 pr-10 text-sm"
+                            disabled={isLoading}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 font-semibold shadow-xs"
+                      onClick={handleContinue}
+                      disabled={isLoading || !identifier.trim()}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Logging in...
+                        </>
+                      ) : password.trim() ? (
+                        "Sign In"
+                      ) : (
+                        "Continue"
+                      )}
+                    </Button>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <Separator className="w-full" />
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="bg-surface-base px-2 text-text-tertiary">Other log in options</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <SSOButton icon={<GoogleIcon />} onClick={() => handleSocialLogin("Google")}>Google</SSOButton>
+                      <SSOButton icon={<FacebookIcon />} onClick={() => handleSocialLogin("Facebook")}>Facebook</SSOButton>
+                      <SSOButton icon={<AppleIcon />} onClick={() => handleSocialLogin("Apple")}>Apple</SSOButton>
+                    </div>
+
+                    <p className="text-center text-sm text-text-secondary">
+                      Don&apos;t have an account?{" "}
+                      <Link href="/auth/signup" className="text-brand-600 hover:text-brand-700 font-semibold underline underline-offset-4">
+                        Sign up to buy courses
+                      </Link>
+                    </p>
+
+                    <Button
+                      variant="outline"
+                      className="w-full border-surface-border bg-surface-raised hover:bg-brand-50 dark:hover:bg-brand-950/30 gap-3"
+                      onClick={() => {
+                        setError(null);
+                        setStep("sso");
+                      }}
+                    >
+                      <Building2 className="w-5 h-5" />
+                      <span>Log in with your organization</span>
+                    </Button>
+                  </>
+                )}
+
+                {step === 2 && (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="otp" className="text-text-primary font-medium">
+                          6-digit code
+                        </Label>
+                        <button
+                          type="button"
+                          onClick={() => setOtp(DEV_OTP)}
+                          className="text-xs text-brand-600 hover:underline font-semibold"
+                        >
+                          Auto-fill ({DEV_OTP})
+                        </button>
                       </div>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-4 h-4" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-5 h-5" />
                         <Input
-                          id="identifier"
+                          id="otp"
                           type="text"
-                          placeholder="e.g. admin@lms.dev or learner@lms.dev"
-                          value={identifier}
-                          onChange={(e) => setIdentifier(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && handleContinue()}
-                          className="pl-9 pr-10"
-                          disabled={isLoading}
-                          autoComplete="email"
+                          inputMode="numeric"
+                          maxLength={6}
+                          placeholder={DEV_OTP}
+                          value={otp}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                            setOtp(value);
+                          }}
+                          onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+                          className="pl-10 text-center text-2xl tracking-widest font-mono"
+                          disabled={isLoading || locked}
+                          autoComplete="one-time-code"
                           autoFocus
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label htmlFor="password" className="text-text-primary font-medium text-xs">
-                        Password <span className="text-text-tertiary font-normal">(Optional for Demo)</span>
-                      </Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-4 h-4" />
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter password or leave empty for OTP"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && handleContinue()}
-                          className="pl-9 pr-10 text-sm"
-                          disabled={isLoading}
+                    {requiresCaptcha() && !locked && (
+                      <label className="flex items-center gap-3 rounded-lg border border-surface-border bg-surface-sunken px-3 py-3 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={captchaChecked}
+                          onChange={(e) => setCaptchaChecked(e.target.checked)}
+                          className="w-4 h-4"
                         />
+                        <span className="text-text-secondary">I&apos;m not a robot</span>
+                      </label>
+                    )}
+
+                    <label className="flex items-center justify-between gap-3 rounded-lg border border-surface-border px-3 py-3">
+                      <div>
+                        <p className="text-sm font-medium text-text-primary">Trust this browser for 30 days</p>
+                        <p className="text-xs text-text-tertiary">Skip verification on this device next time</p>
+                      </div>
+                      <Switch
+                        checked={trustDevice}
+                        onCheckedChange={(checked: boolean) => setTrustDevice(checked)}
+                        disabled={isLoading || locked}
+                      />
+                    </label>
+
+                    <Button
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3"
+                      onClick={handleVerify}
+                      disabled={isLoading || otp.length !== 6 || locked}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Log in
+                        </>
+                      ) : (
+                        "Log in"
+                      )}
+                    </Button>
+
+                    <div className="space-y-3 text-sm text-center">
+                      <p className="text-text-secondary">
+                        Didn&apos;t receive the code?{" "}
+                        <button
+                          onClick={handleResend}
+                          disabled={resendTimer > 0 || isLoading}
+                          className={cn(
+                            "font-medium",
+                            resendTimer > 0 ? "text-text-tertiary cursor-not-allowed" : "text-brand-600 hover:text-brand-700"
+                          )}
+                        >
+                          {resendTimer > 0 ? `Resend code in ${resendTimer}s` : "Resend code"}
+                        </button>
+                      </p>
+                      <p className="text-text-secondary">
+                        <Link href="/auth/forgot-password" className="text-brand-600 hover:text-brand-700 font-medium">
+                          Having trouble logging in? Reset your password
+                        </Link>
+                      </p>
+                      <p className="text-text-secondary">
+                        <button onClick={handleBack} className="text-brand-600 hover:text-brand-700 font-medium">
+                          Log in to a different account
+                        </button>
+                      </p>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-text-secondary hover:text-text-primary"
+                      onClick={handleBack}
+                    >
+                      <ArrowLeft className="mr-2 w-4 h-4" />
+                      Back to email entry
+                    </Button>
+                  </>
+                )}
+
+                {step === "mfa" && (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="totp" className="text-text-primary font-medium">
+                          Authenticator code
+                        </Label>
                         <button
                           type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+                          onClick={() => setTotpCode(DEV_TOTP)}
+                          className="text-xs text-brand-600 hover:underline font-semibold"
                         >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          Auto-fill ({DEV_TOTP})
                         </button>
                       </div>
+                      <div className="relative">
+                        <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-5 h-5" />
+                        <Input
+                          id="totp"
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={6}
+                          placeholder={DEV_TOTP}
+                          value={totpCode}
+                          onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                          onKeyDown={(e) => e.key === "Enter" && handleMfaVerify()}
+                          className="pl-10 text-center text-2xl tracking-widest font-mono"
+                          disabled={isLoading}
+                          autoComplete="one-time-code"
+                          autoFocus
+                        />
+                      </div>
+                      <p className="text-xs text-text-tertiary">
+                        Simulated TOTP for this demo — a real deployment would validate against Google/Microsoft Authenticator or Authy.
+                      </p>
                     </div>
-                  </div>
 
-                  <Button
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 font-semibold shadow-xs"
-                    onClick={handleContinue}
-                    disabled={isLoading || !identifier.trim()}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Logging in...
-                      </>
-                    ) : password.trim() ? (
-                      "Sign In"
-                    ) : (
-                      "Continue"
-                    )}
-                  </Button>
+                    <Button
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3"
+                      onClick={handleMfaVerify}
+                      disabled={isLoading || totpCode.length !== 6}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Verifying...
+                        </>
+                      ) : (
+                        "Verify & Log in"
+                      )}
+                    </Button>
 
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <Separator className="w-full" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="bg-surface-base px-2 text-text-tertiary">Other log in options</span>
-                    </div>
-                  </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-text-secondary hover:text-text-primary"
+                      onClick={handleBack}
+                    >
+                      <ArrowLeft className="mr-2 w-4 h-4" />
+                      Back to email entry
+                    </Button>
+                  </>
+                )}
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <SSOButton icon={<GoogleIcon />} onClick={() => handleSocialLogin("Google")}>Google</SSOButton>
-                    <SSOButton icon={<FacebookIcon />} onClick={() => handleSocialLogin("Facebook")}>Facebook</SSOButton>
-                    <SSOButton icon={<AppleIcon />} onClick={() => handleSocialLogin("Apple")}>Apple</SSOButton>
-                  </div>
-
-                  <p className="text-center text-sm text-text-secondary">
-                    Don&apos;t have an account?{" "}
-                    <Link href="/auth/signup" className="text-brand-600 hover:text-brand-700 font-semibold underline underline-offset-4">
-                      Sign up to buy courses
-                    </Link>
-                  </p>
-
-                  <Button
-                    variant="outline"
-                    className="w-full border-surface-border bg-surface-raised hover:bg-brand-50 dark:hover:bg-brand-950/30 gap-3"
-                    onClick={() => {
-                      setError(null);
-                      setStep("sso");
-                    }}
-                  >
-                    <Building2 className="w-5 h-5" />
-                    <span>Log in with your organization</span>
-                  </Button>
-                </>
-              )}
-
-              {step === 2 && (
-                <>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="otp" className="text-text-primary font-medium">
-                        6-digit code
+                {step === "sso" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="sso-domain" className="text-text-primary font-medium">
+                        Work email or organization domain
                       </Label>
-                      <button
-                        type="button"
-                        onClick={() => setOtp(DEV_OTP)}
-                        className="text-xs text-brand-600 hover:underline font-semibold"
-                      >
-                        Auto-fill ({DEV_OTP})
-                      </button>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-5 h-5" />
+                        <Input
+                          id="sso-domain"
+                          type="text"
+                          placeholder="you@company.com or company.com"
+                          value={ssoDomain}
+                          onChange={(e) => setSsoDomain(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleEnterpriseSso()}
+                          className="pl-10"
+                          disabled={isLoading}
+                          autoFocus
+                        />
+                      </div>
                     </div>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-5 h-5" />
-                      <Input
-                        id="otp"
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder={DEV_OTP}
-                        value={otp}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-                          setOtp(value);
-                        }}
-                        onKeyDown={(e) => e.key === "Enter" && handleVerify()}
-                        className="pl-10 text-center text-2xl tracking-widest font-mono"
-                        disabled={isLoading || locked}
-                        autoComplete="one-time-code"
-                        autoFocus
-                      />
-                    </div>
-                  </div>
 
-                  {requiresCaptcha() && !locked && (
-                    <label className="flex items-center gap-3 rounded-lg border border-surface-border bg-surface-sunken px-3 py-3 text-sm cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={captchaChecked}
-                        onChange={(e) => setCaptchaChecked(e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-text-secondary">I&apos;m not a robot</span>
-                    </label>
-                  )}
+                    <Button
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 gap-2"
+                      onClick={handleEnterpriseSso}
+                      disabled={isLoading || !ssoDomain.trim()}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Redirecting to your identity provider...
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="w-4 h-4" />
+                          Continue with SSO
+                        </>
+                      )}
+                    </Button>
 
-                  <label className="flex items-center justify-between gap-3 rounded-lg border border-surface-border px-3 py-3">
-                    <div>
-                      <p className="text-sm font-medium text-text-primary">Trust this browser for 30 days</p>
-                      <p className="text-xs text-text-tertiary">Skip verification on this device next time</p>
-                    </div>
-                    <Switch
-                      checked={trustDevice}
-                      onCheckedChange={(checked: boolean) => setTrustDevice(checked)}
-                      disabled={isLoading || locked}
-                    />
-                  </label>
-
-                  <Button
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3"
-                    onClick={handleVerify}
-                    disabled={isLoading || otp.length !== 6 || locked}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Log in
-                      </>
-                    ) : (
-                      "Log in"
-                    )}
-                  </Button>
-
-                  <div className="space-y-3 text-sm text-center">
-                    <p className="text-text-secondary">
-                      Didn&apos;t receive the code?{" "}
-                      <button
-                        onClick={handleResend}
-                        disabled={resendTimer > 0 || isLoading}
-                        className={cn(
-                          "font-medium",
-                          resendTimer > 0 ? "text-text-tertiary cursor-not-allowed" : "text-brand-600 hover:text-brand-700"
-                        )}
-                      >
-                        {resendTimer > 0 ? `Resend code in ${resendTimer}s` : "Resend code"}
-                      </button>
+                    <p className="text-xs text-text-tertiary text-center">
+                      You&apos;ll be redirected to your organization&apos;s SAML 2.0, Okta, or
+                      Azure AD sign-in page. No password is entered here.
                     </p>
-                    <p className="text-text-secondary">
-                      <Link href="/auth/forgot-password" className="text-brand-600 hover:text-brand-700 font-medium">
-                        Having trouble logging in? Reset your password
-                      </Link>
-                    </p>
-                    <p className="text-text-secondary">
-                      <button onClick={handleBack} className="text-brand-600 hover:text-brand-700 font-medium">
-                        Log in to a different account
-                      </button>
-                    </p>
-                  </div>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-text-secondary hover:text-text-primary"
-                    onClick={handleBack}
-                  >
-                    <ArrowLeft className="mr-2 w-4 h-4" />
-                    Back to email entry
-                  </Button>
-                </>
-              )}
-
-              {step === "mfa" && (
-                <>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="totp" className="text-text-primary font-medium">
-                        Authenticator code
-                      </Label>
-                      <button
-                        type="button"
-                        onClick={() => setTotpCode(DEV_TOTP)}
-                        className="text-xs text-brand-600 hover:underline font-semibold"
-                      >
-                        Auto-fill ({DEV_TOTP})
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-5 h-5" />
-                      <Input
-                        id="totp"
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder={DEV_TOTP}
-                        value={totpCode}
-                        onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                        onKeyDown={(e) => e.key === "Enter" && handleMfaVerify()}
-                        className="pl-10 text-center text-2xl tracking-widest font-mono"
-                        disabled={isLoading}
-                        autoComplete="one-time-code"
-                        autoFocus
-                      />
-                    </div>
-                    <p className="text-xs text-text-tertiary">
-                      Simulated TOTP for this demo — a real deployment would validate against Google/Microsoft Authenticator or Authy.
-                    </p>
-                  </div>
-
-                  <Button
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3"
-                    onClick={handleMfaVerify}
-                    disabled={isLoading || totpCode.length !== 6}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Verifying...
-                      </>
-                    ) : (
-                      "Verify & Log in"
-                    )}
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-text-secondary hover:text-text-primary"
-                    onClick={handleBack}
-                  >
-                    <ArrowLeft className="mr-2 w-4 h-4" />
-                    Back to email entry
-                  </Button>
-                </>
-              )}
-
-              {step === "sso" && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="sso-domain" className="text-text-primary font-medium">
-                      Work email or organization domain
-                    </Label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary w-5 h-5" />
-                      <Input
-                        id="sso-domain"
-                        type="text"
-                        placeholder="you@company.com or company.com"
-                        value={ssoDomain}
-                        onChange={(e) => setSsoDomain(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleEnterpriseSso()}
-                        className="pl-10"
-                        disabled={isLoading}
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3 gap-2"
-                    onClick={handleEnterpriseSso}
-                    disabled={isLoading || !ssoDomain.trim()}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Redirecting to your identity provider...
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheck className="w-4 h-4" />
-                        Continue with SSO
-                      </>
-                    )}
-                  </Button>
-
-                  <p className="text-xs text-text-tertiary text-center">
-                    You&apos;ll be redirected to your organization&apos;s SAML 2.0, Okta, or
-                    Azure AD sign-in page. No password is entered here.
-                  </p>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-text-secondary hover:text-text-primary"
-                    onClick={() => {
-                      setError(null);
-                      setStep(1);
-                    }}
-                  >
-                    <ArrowLeft className="mr-2 w-4 h-4" />
-                    Back to email entry
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-text-secondary hover:text-text-primary"
+                      onClick={() => {
+                        setError(null);
+                        setStep(1);
+                      }}
+                    >
+                      <ArrowLeft className="mr-2 w-4 h-4" />
+                      Back to email entry
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           <p className="text-center text-xs text-text-tertiary mt-6">

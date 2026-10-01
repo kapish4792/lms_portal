@@ -16,6 +16,8 @@ export interface MockUser {
   bio?: string;
   phone?: string;
   mfaEnrolled: boolean;
+  facePhoto?: string;
+  biometricRegistered?: boolean;
 }
 
 // Seed directory used to resolve an identifier to a role for the dedicated-login
