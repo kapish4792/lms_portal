@@ -148,6 +148,7 @@ Newly specified module (added 2026-09-26, not part of the original TalentLMS/Ude
 - [x] 3. Udemy-style course card UI & automatic YouTube/domain thumbnail resolution.
 - [x] 4. Home page course click auth redirection (`/auth/login?courseId=...`) & auto-enrollment into player.
 - [x] 5. Modern theme-based side navigation, primary-tinted hover scrollbar with stable gutter, collapsed state centering, and responsive mobile navigation drawer.
+- [x] 6. Learner Biometric Facial Recognition Authentication: Camera consent disclosure and real-time facial recognition verification simulation (HUD scanner, optical targeting, liveness check, fast-track demo override) mandated for learner logins before entering dashboard/course environment.
 
 ### Grading Hub & Approval Inbox — dedicated pages (nav items existed in `src/config/nav.ts`, no page behind either — both fell through to the generic `[role]/[module]` placeholder)
 

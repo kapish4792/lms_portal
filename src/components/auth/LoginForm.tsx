@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { BrandLogo } from "@/components/ui/brand-logo";
+import { FaceVerificationStep } from "@/components/auth/FaceVerificationStep";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-type Step = 1 | 2 | "sso" | "mfa";
+type Step = 1 | 2 | "sso" | "mfa" | "face";
 
 // Simulated TOTP authenticator code — Section 3.2's MFA verification step,
 // shown only for accounts seeded with mfaEnrolled: true, so the flow is
@@ -132,10 +133,17 @@ export default function LoginForm() {
       setStep("mfa");
       return;
     }
+    // Learner Biometric Facial Recognition Verification Step
+    if (user.role === "learner") {
+      setPendingLearnerUser(user);
+      setStep("face");
+      return;
+    }
     redirectAfterLogin(user);
   };
 
   const [step, setStep] = useState<Step>(1);
+  const [pendingLearnerUser, setPendingLearnerUser] = useState<MockUser | null>(null);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -286,7 +294,7 @@ export default function LoginForm() {
       const result = { success: true, user };
       if (result.success && user) {
         useAuthStore.setState({ currentUser: user, pendingIdentifier: null });
-        redirectAfterLogin(user);
+        proceedAfterPrimaryAuth(user);
       }
     }, 1200);
   };
@@ -351,9 +359,21 @@ export default function LoginForm() {
             </div>
           </div>
 
-          {/* Login Card */}
-          <Card className="border-surface-border shadow-card">
-            <CardHeader className="text-center pb-4">
+          {/* Login Card or Face Verification */}
+          {step === "face" && pendingLearnerUser ? (
+            <FaceVerificationStep
+              user={pendingLearnerUser}
+              onSuccess={() => {
+                redirectAfterLogin(pendingLearnerUser);
+              }}
+              onCancel={() => {
+                setPendingLearnerUser(null);
+                setStep(1);
+              }}
+            />
+          ) : (
+            <Card className="border-surface-border shadow-card">
+              <CardHeader className="text-center pb-4">
               <CardTitle className="text-2xl font-bold text-text-primary">
                 {step === 1 && "Log in to continue your learning journey"}
                 {step === 2 && "Check your inbox"}
@@ -792,6 +812,7 @@ export default function LoginForm() {
               )}
             </CardContent>
           </Card>
+          )}
 
           <p className="text-center text-xs text-text-tertiary mt-6">
             Powered by ESSCI Skilling India in Electronics
