@@ -69,6 +69,7 @@ export interface CourseCardProps {
   progress?: number;
   editable?: boolean;
   onEnroll?: (courseId: string) => void;
+  onViewDetails?: (course: Course) => void;
   href?: string;
 }
 
@@ -80,6 +81,7 @@ export function CourseCard({
   progress = 0,
   editable = true,
   onEnroll,
+  onViewDetails,
   href,
 }: CourseCardProps) {
   const [imgError, setImgError] = useState(false);
@@ -284,7 +286,7 @@ export function CourseCard({
           )}
 
           {mode === "catalog" && (
-            <div>
+            <div className="space-y-2">
               {isEnrolled ? (
                 <Button
                   size="sm"
@@ -304,6 +306,16 @@ export function CourseCard({
                   <ShoppingBag className="w-3.5 h-3.5 mr-1.5" />
                   {price > 0 ? `Enroll Now · $${price}` : "Enroll for Free"}
                 </Button>
+              )}
+
+              {onViewDetails && (
+                <button
+                  type="button"
+                  onClick={() => onViewDetails(course)}
+                  className="w-full text-center text-[11px] font-semibold text-primary hover:underline cursor-pointer pt-0.5 block"
+                >
+                  View Course Syllabus & Objectives →
+                </button>
               )}
             </div>
           )}

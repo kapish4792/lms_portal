@@ -25,7 +25,7 @@ import type { Role } from "@/lib/mock/users";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export function AdminDashboard({ role, department }: { role: Role; department?: string }) {
-  const users = useUsersStore((s) => s.users);
+  const users = useUsersStore((s) => s.directory);
   const courses = useCoursesStore((s) => s.courses);
   const enrollments = useEnrollmentsStore((s) => s.enrollments);
   const categories = useCategoriesStore((s) => s.categories);

@@ -22,6 +22,8 @@ import { useCategoriesStore } from "@/lib/store/categories-store";
 import { useEnrollmentsStore } from "@/lib/store/enrollments-store";
 import { Search, Star, ShoppingBag, Play, Clock, Users, Tag, Filter, X, Check, BookOpen, SlidersHorizontal } from "lucide-react";
 import { CourseCard } from "@/components/courses/CourseCard";
+import { CourseDetailsModal } from "@/components/courses/CourseDetailsModal";
+import type { Course } from "@/lib/store/courses-store";
 
 export default function CatalogPage() {
   const params = useParams<{ role: string }>();
@@ -35,6 +37,7 @@ export default function CatalogPage() {
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [priceFilter, setPriceFilter] = useState("Any Price");
   const [sortBy, setSortBy] = useState("relevance");
+  const [selectedCourseForModal, setSelectedCourseForModal] = useState<Course | null>(null);
 
   // Get user's enrollments to check enrollment status
   const userEnrollments = useMemo(
@@ -250,11 +253,20 @@ export default function CatalogPage() {
                   isEnrolled={enrolled}
                   progress={progress}
                   onEnroll={handleEnroll}
+                  onViewDetails={(c) => setSelectedCourseForModal(c)}
                 />
               );
             })}
           </div>
         )}
+
+        {/* Course Details & Syllabus Modal (Open edX Screen 3) */}
+        <CourseDetailsModal
+          course={selectedCourseForModal}
+          isOpen={!!selectedCourseForModal}
+          onClose={() => setSelectedCourseForModal(null)}
+          user={user}
+        />
 
         {/* Empty state for no published courses */}
         {scoped.length === 0 && filtered.length === 0 && (
