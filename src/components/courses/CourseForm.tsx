@@ -177,7 +177,7 @@ export function CourseForm({ user, existing }: { user: MockUser; existing?: Cour
     { prompt: string; options: string[]; correctIndex: number; explanation: string }[]
   >([
     {
-      prompt: "What is the primary standard regarding data classification and handling under Acme Corp's compliance policy?",
+      prompt: "What is the primary standard regarding data classification and handling under ESSCI's compliance policy?",
       options: [
         "Store all data in unencrypted public cloud storage for faster team accessibility",
         "Classify and encrypt all Confidential and PII data both at rest and in transit",

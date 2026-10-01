@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,7 +65,7 @@ function SignUpContent() {
     setTimeout(() => {
       setIsLoading(false);
       const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-      const orgName = organization.trim() || "Acme Corp";
+      const orgName = organization.trim() || "ESSCI";
 
       // 1. Add to user directory
       addUser({
@@ -109,11 +110,8 @@ function SignUpContent() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.03%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40 pointer-events-none" />
 
         <div className="relative z-10 space-y-6">
-          <Link href="/" className="inline-flex items-center gap-2.5 text-white group">
-            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:scale-105 transition-transform">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">LMS Portal</span>
+          <Link href="/" className="inline-flex items-center shrink-0">
+            <BrandLogo size="md" />
           </Link>
 
           <div className="pt-8 space-y-4">
@@ -224,7 +222,7 @@ function SignUpContent() {
                 Account Created Successfully!
               </h3>
               <p className="text-sm text-text-secondary max-w-md mx-auto">
-                Welcome to LMS Portal! Your account has been provisioned. Redirecting to your learning workspace...
+                Welcome to ESSCI Skilling India in Electronics! Your account has been provisioned. Redirecting to your learning workspace...
               </p>
               <div className="flex items-center justify-center gap-2 pt-2 text-primary font-medium text-sm">
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -301,7 +299,7 @@ function SignUpContent() {
                 </Label>
                 <Input
                   id="org"
-                  placeholder="Acme Corp or Independent"
+                  placeholder="ESSCI or Independent"
                   value={organization}
                   onChange={(e) => setOrganization(e.target.value)}
                   disabled={isLoading}

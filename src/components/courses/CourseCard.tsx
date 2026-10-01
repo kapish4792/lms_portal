@@ -190,7 +190,7 @@ export function CourseCard({
           {/* Instructor / Department / Org */}
           <p className="text-xs text-muted-foreground truncate">
             {course.department ? `${course.department} · ` : ""}
-            {course.org || "Acme Corp"}
+            {course.org || "ESSCI"}
           </p>
 
           {/* Udemy Star Rating & Reviews Row */}

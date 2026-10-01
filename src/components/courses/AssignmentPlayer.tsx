@@ -31,7 +31,7 @@ export function AssignmentPlayer({
   onNextLesson?: () => void;
 }) {
   const [submissionTab, setSubmissionTab] = useState<"text" | "upload">("text");
-  const [repoUrl, setRepoUrl] = useState("https://github.com/acme-org/security-hardening-rfc");
+  const [repoUrl, setRepoUrl] = useState("https://github.com/essci-org/security-hardening-rfc");
   const [notes, setNotes] = useState(
     "Implemented role-based token sanitization with AES-GCM encryption for all PII data payload boundaries. Added automated unit and integration tests covering OWASP injection vectors."
   );

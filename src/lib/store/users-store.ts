@@ -23,10 +23,10 @@ export type UpdateUserInput = Partial<Omit<DirectoryUser, "id" | "registeredAt">
 
 const seedDirectory = (): DirectoryUser[] => {
   const extra: DirectoryUser[] = [
-    { id: "u-101", firstName: "Priya", lastName: "Nair", email: "priya.nair@acme.dev", username: "priya.nair", role: "instructor", org: "Acme Corp", department: "Sales", status: "Active", registeredAt: "2026-06-02" },
-    { id: "u-102", firstName: "Marcus", lastName: "Webb", email: "marcus.webb@acme.dev", username: "marcus.webb", role: "learner", org: "Acme Corp", department: "Engineering", status: "Active", registeredAt: "2026-07-14" },
-    { id: "u-103", firstName: "Lena", lastName: "Farouk", email: "lena.farouk@acme.dev", username: "lena.farouk", role: "learner", org: "Acme Corp", department: "Sales", status: "Suspended", registeredAt: "2026-04-21" },
-    { id: "u-104", firstName: "Tom", lastName: "Reyes", email: "tom.reyes@acme.dev", username: "tom.reyes", role: "learner", org: "Acme Corp", department: "Engineering", status: "Active", registeredAt: "2026-08-30" },
+    { id: "u-101", firstName: "Priya", lastName: "Nair", email: "priya.nair@essci.org", username: "priya.nair", role: "instructor", org: "ESSCI", department: "Electronics", status: "Active", registeredAt: "2026-06-02" },
+    { id: "u-102", firstName: "Rajesh", lastName: "Patel", email: "rajesh.patel@essci.org", username: "rajesh.patel", role: "learner", org: "ESSCI", department: "Engineering", status: "Active", registeredAt: "2026-07-14" },
+    { id: "u-103", firstName: "Sneha", lastName: "Iyer", email: "sneha.iyer@essci.org", username: "sneha.iyer", role: "learner", org: "ESSCI", department: "VLSI Design", status: "Suspended", registeredAt: "2026-04-21" },
+    { id: "u-104", firstName: "Vikram", lastName: "Verma", email: "vikram.verma@essci.org", username: "vikram.verma", role: "learner", org: "ESSCI", department: "Embedded Systems", status: "Active", registeredAt: "2026-08-30" },
   ];
   const seeded: DirectoryUser[] = MOCK_USERS.map((u, i) => {
     const [firstName, ...rest] = u.name.split(" ");

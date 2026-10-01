@@ -8,6 +8,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { HOME_NAV_ITEMS, HOME_ANNOUNCEMENT } from "@/lib/mock/home-nav";
 
+import { BrandLogo } from "@/components/ui/brand-logo";
+
 export function HomeHeader() {
   const currentUser = useAuthStore((s) => s.currentUser);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,16 +34,8 @@ export function HomeHeader() {
       <header className="sticky top-0 z-40 w-full border-b border-surface-border bg-surface-base/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Brand */}
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-sm group-hover:scale-105 transition-transform">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight">LMS Portal</span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold uppercase tracking-wider text-text-tertiary border border-surface-border rounded-sm px-1.5 py-0.5">
-                Academy
-              </span>
-            </div>
+          <Link href="/" className="flex items-center shrink-0">
+            <BrandLogo size="md" />
           </Link>
 
           {/* Desktop Nav links from Mock Data */}

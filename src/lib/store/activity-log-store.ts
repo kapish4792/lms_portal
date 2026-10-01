@@ -32,7 +32,7 @@ const seedActivityLogs = (): ActivityLogEntry[] => [
     lessonName: "Phishing & Social Engineering Quiz",
     score: 95,
     ipAddress: "192.168.1.104",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "act-2",
@@ -42,7 +42,7 @@ const seedActivityLogs = (): ActivityLogEntry[] => [
     courseName: "Workplace Harassment Prevention",
     lessonName: "Module 2: Reporting Procedures",
     ipAddress: "192.168.1.112",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "act-3",
@@ -53,7 +53,7 @@ const seedActivityLogs = (): ActivityLogEntry[] => [
     lessonName: "Course Attestation",
     score: 100,
     ipAddress: "192.168.1.88",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "act-4",
@@ -64,7 +64,7 @@ const seedActivityLogs = (): ActivityLogEntry[] => [
     lessonName: "State Management Architecture Lab",
     score: 90,
     ipAddress: "192.168.1.201",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "act-5",
@@ -74,7 +74,7 @@ const seedActivityLogs = (): ActivityLogEntry[] => [
     courseName: "Executive Leadership Fundamentals",
     lessonName: "Vision & Strategic Alignment",
     ipAddress: "192.168.1.104",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "act-6",
@@ -85,7 +85,7 @@ const seedActivityLogs = (): ActivityLogEntry[] => [
     lessonName: "AWS/GCP Security Architecture Exam",
     score: 68,
     ipAddress: "192.168.1.112",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "act-7",
@@ -94,7 +94,7 @@ const seedActivityLogs = (): ActivityLogEntry[] => [
     action: "User Registered",
     courseName: "System Onboarding",
     ipAddress: "192.168.1.45",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
 ];
 

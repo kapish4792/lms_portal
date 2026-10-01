@@ -218,7 +218,7 @@ export function CodingExercisePlayer({
                 </button>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Implement a defense-in-depth token sanitizer in TypeScript. Your function must validate that all authorization tokens conform to internal Acme security standards before being passed to downstream RPC microservices.
+                Implement a defense-in-depth token sanitizer in TypeScript. Your function must validate that all authorization tokens conform to internal ESSCI security standards before being passed to downstream RPC microservices.
               </p>
 
               <div className="space-y-1.5 pt-1">

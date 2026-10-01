@@ -47,7 +47,7 @@ export const HOME_NAV_ITEMS: HomeNavItem[] = [
 
 export const HOME_FOOTER_DATA: HomeFooterData = {
   tagline: "Delivering high-retention education for teams and independent learners globally.",
-  copyright: `© ${new Date().getFullYear()} LMS Portal Inc. All rights reserved.`,
+  copyright: `© ${new Date().getFullYear()} ESSCI Skilling India in Electronics. All rights reserved.`,
   language: "English (US)",
   sections: [
     {

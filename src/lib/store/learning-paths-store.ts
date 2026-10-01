@@ -42,7 +42,7 @@ const seedPaths = (): LearningPath[] => [
     description: "Everything a new Engineering hire completes in their first 30 days.",
     category: "Onboarding",
     department: "Engineering",
-    org: "Acme Corp",
+    org: "ESSCI",
     steps: [
       { id: nextId("s"), type: "task", title: "Sign employee handbook acknowledgment", dueDayFromEnrollment: 1, assignee: "New hire", completionType: "checkbox" },
       { id: nextId("s"), type: "course", courseId: "c-1" },

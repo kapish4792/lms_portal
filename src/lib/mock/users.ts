@@ -22,13 +22,13 @@ export interface MockUser {
 // redirect (Section 3.3.B). In a real backend this lookup happens server-side.
 // Note: Only one LMS Admin can exist (singleton enforcement).
 export const MOCK_USERS: MockUser[] = [
-  { identifier: "super@lms.dev", name: "Sam Root", role: "super-admin", org: "LMS Platform", mfaEnrolled: true },
-  { identifier: "lmsadmin@lms.dev", name: "Alex Morgan", role: "lms-admin", org: "LMS Platform", mfaEnrolled: true },
-  { identifier: "admin@lms.dev", name: "Avery Chen", role: "org-admin", org: "Acme Corp", mfaEnrolled: true },
-  { identifier: "depthead@lms.dev", name: "Devon Park", role: "dept-head", org: "Acme Corp", department: "Engineering", mfaEnrolled: true },
-  { identifier: "instructor@lms.dev", name: "Riley Instructor", role: "instructor", org: "Acme Corp", department: "Engineering", mfaEnrolled: false },
-  { identifier: "learner@lms.dev", name: "Jamie Learner", role: "learner", org: "Acme Corp", department: "Sales", mfaEnrolled: false },
-  { identifier: "manager@lms.dev", name: "Morgan Lead", role: "manager", org: "Acme Corp", department: "Sales", mfaEnrolled: true },
+  { identifier: "super@lms.dev", name: "Aarav Sharma", role: "super-admin", org: "LMS Platform", mfaEnrolled: true },
+  { identifier: "lmsadmin@lms.dev", name: "Alok Verma", role: "lms-admin", org: "LMS Platform", mfaEnrolled: true },
+  { identifier: "admin@lms.dev", name: "Dr. Rajeshwar Rao", role: "org-admin", org: "ESSCI", mfaEnrolled: true },
+  { identifier: "depthead@lms.dev", name: "Devika Patel", role: "dept-head", org: "ESSCI", department: "Engineering", mfaEnrolled: true },
+  { identifier: "instructor@lms.dev", name: "Prof. Priya Nair", role: "instructor", org: "ESSCI", department: "Engineering", mfaEnrolled: false },
+  { identifier: "learner@lms.dev", name: "Rohan Deshmukh", role: "learner", org: "ESSCI", department: "Electronics", mfaEnrolled: false },
+  { identifier: "manager@lms.dev", name: "Ananya Gupta", role: "manager", org: "ESSCI", department: "Electronics", mfaEnrolled: true },
 ];
 
 export const DEV_OTP = "123456";
@@ -53,7 +53,7 @@ export function resolveUser(identifier: string): MockUser {
       identifier,
       name: identifier.split("@")[0] || "New User",
       role: "learner",
-      org: "Acme Corp",
+      org: "ESSCI",
       mfaEnrolled: false,
     }
   );

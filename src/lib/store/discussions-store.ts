@@ -40,7 +40,7 @@ const seedDiscussions = (): DiscussionThread[] => [
     isPinned: true,
     isResolved: true,
     upvotes: 8,
-    org: "Acme Corp",
+    org: "ESSCI",
     replies: [
       {
         id: "rep-1",
@@ -65,7 +65,7 @@ const seedDiscussions = (): DiscussionThread[] => [
     isPinned: false,
     isResolved: false,
     upvotes: 3,
-    org: "Acme Corp",
+    org: "ESSCI",
     replies: [
       {
         id: "rep-2",
@@ -89,7 +89,7 @@ const seedDiscussions = (): DiscussionThread[] => [
     isPinned: false,
     isResolved: false,
     upvotes: 2,
-    org: "Acme Corp",
+    org: "ESSCI",
     replies: [],
   },
 ];

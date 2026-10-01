@@ -52,7 +52,7 @@ export function CertificateView({
       month: "long",
       day: "numeric",
     });
-  const orgName = certificate?.org || previewData?.orgName || "Acme Academy";
+  const orgName = certificate?.org || previewData?.orgName || "ESSCI Academy";
   const certificateId =
     certificate?.certificateId ||
     previewData?.certificateId ||

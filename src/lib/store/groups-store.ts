@@ -21,7 +21,7 @@ const seedGroups = (): Group[] => [
   {
     id: "g-1",
     name: "Q3 Sales Onboarding",
-    org: "Acme Corp",
+    org: "ESSCI",
     department: "Sales",
     memberIds: ["u-102", "u-103"],
     courseIds: ["c-1"],
@@ -29,7 +29,7 @@ const seedGroups = (): Group[] => [
   {
     id: "g-2",
     name: "Engineering — All Instructors",
-    org: "Acme Corp",
+    org: "ESSCI",
     department: "Engineering",
     memberIds: [],
     courseIds: ["c-2"],

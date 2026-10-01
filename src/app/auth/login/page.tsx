@@ -3,8 +3,8 @@ import LoginForm from "@/components/auth/LoginForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Log In | Enterprise LMS Portal",
-  description: "Sign in to access your courses, certifications, and enterprise learning dashboard.",
+  title: "Log In | ESSCI Skilling India in Electronics",
+  description: "Sign in to access your courses, certifications, and electronics learning dashboard.",
 };
 
 export default function LoginPage() {

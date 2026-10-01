@@ -243,7 +243,7 @@ export default function CourseLandingPage() {
             </Select>
             {mode === "csv-invite" && (
               <Input
-                placeholder="email1@acme.dev, email2@acme.dev"
+                placeholder="email1@essci.org, email2@essci.org"
                 value={csvEmails}
                 onChange={(e) => setCsvEmails(e.target.value)}
               />

@@ -427,7 +427,7 @@ export default function HomePage() {
 
                     <p className="text-xs text-text-secondary truncate">
                       {course.department ? `${course.department} · ` : ""}
-                      {course.org || "Acme Academy"}
+                      {course.org || "ESSCI Academy"}
                     </p>
 
                     {/* Udemy Star Rating & Reviews */}
@@ -749,7 +749,7 @@ export default function HomePage() {
             Ready to Take Your Skills to the Next Level?
           </h2>
           <p className="text-primary-foreground/80 max-w-2xl mx-auto text-sm sm:text-base">
-            Join thousands of ambitious engineers, leaders, and specialists learning on LMS Portal today.
+            Join thousands of ambitious engineers, leaders, and specialists learning on ESSCI Skilling India in Electronics today.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <Button

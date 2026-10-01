@@ -110,7 +110,7 @@ export const useAuthStore = create<AuthState>()(
         return { success: true };
       },
 
-      registerLearner: ({ email, name, org = "Acme Corp", department = "Individual" }) => {
+      registerLearner: ({ email, name, org = "ESSCI", department = "Individual" }) => {
         const normalized = email.trim().toLowerCase();
         const user: MockUser = {
           identifier: normalized,

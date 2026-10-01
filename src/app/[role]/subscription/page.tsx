@@ -212,7 +212,7 @@ export default function SubscriptionBillingPage() {
   };
 
   // --- Org Admin Data & Handlers ---
-  const currentOrgName = user.org || "Acme Corp";
+  const currentOrgName = user.org || "ESSCI";
   const orgSub = getOrgSubscription(currentOrgName);
   const currentPlan = plans.find((p) => p.id === orgSub.planId) || plans[0];
   const orgInvoices = invoices.filter((inv) => inv.orgName === currentOrgName || isLmsAdmin);
@@ -1156,7 +1156,7 @@ export default function SubscriptionBillingPage() {
                 </Label>
                 <Input
                   id="cardholder"
-                  placeholder="Acme Corporation Inc."
+                  placeholder="ESSCIoration Inc."
                   value={paymentForm.cardholderName}
                   onChange={(e) => setPaymentForm({ ...paymentForm, cardholderName: e.target.value })}
                   required
@@ -1209,7 +1209,7 @@ export default function SubscriptionBillingPage() {
                 <Input
                   id="billEmail"
                   type="email"
-                  placeholder="finance@acme.com"
+                  placeholder="finance@essci.org"
                   value={paymentForm.billingEmail}
                   onChange={(e) => setPaymentForm({ ...paymentForm, billingEmail: e.target.value })}
                   required

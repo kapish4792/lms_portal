@@ -112,8 +112,8 @@ const seedPlans: SubscriptionPlan[] = [
 ];
 
 const seedSubscriptions: Record<string, OrgSubscription> = {
-  "Acme Corp": {
-    orgName: "Acme Corp",
+  "ESSCI": {
+    orgName: "ESSCI",
     planId: "plan-enterprise",
     billingCycle: "annual",
     status: "active",
@@ -127,9 +127,9 @@ const seedSubscriptions: Record<string, OrgSubscription> = {
       brand: "VISA Business",
       last4: "4242",
       exp: "08/29",
-      billingEmail: "finance@acme.com",
+      billingEmail: "finance@essci.org",
       taxId: "US-EIN 84-9382109",
-      cardholderName: "Acme Corporation Inc.",
+      cardholderName: "ESSCIoration Inc.",
     },
   },
   "LMS Platform": {
@@ -155,11 +155,11 @@ const seedSubscriptions: Record<string, OrgSubscription> = {
 };
 
 const seedInvoices: Invoice[] = [
-  { id: "INV-2026-09", orgName: "Acme Corp", date: "2026-09-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
-  { id: "INV-2026-08", orgName: "Acme Corp", date: "2026-08-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
-  { id: "INV-2026-07", orgName: "Acme Corp", date: "2026-07-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
-  { id: "INV-2026-06", orgName: "Acme Corp", date: "2026-06-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
-  { id: "INV-2026-05", orgName: "Acme Corp", date: "2026-05-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
+  { id: "INV-2026-09", orgName: "ESSCI", date: "2026-09-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
+  { id: "INV-2026-08", orgName: "ESSCI", date: "2026-08-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
+  { id: "INV-2026-07", orgName: "ESSCI", date: "2026-07-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
+  { id: "INV-2026-06", orgName: "ESSCI", date: "2026-06-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
+  { id: "INV-2026-05", orgName: "ESSCI", date: "2026-05-01", amount: "$499.00", status: "Paid", plan: "Enterprise Tier (Annual)" },
 ];
 
 interface SubscriptionStoreState {

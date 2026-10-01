@@ -19,6 +19,7 @@ import { useAuthStore } from "@/lib/store/auth-store";
 import { useOrganizationsStore } from "@/lib/store/organizations-store";
 import { useCoursesStore } from "@/lib/store/courses-store";
 import type { MockUser } from "@/lib/mock/users";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -224,21 +225,9 @@ export function AppShell({
           <Link
             href={`/${user.role}/dashboard`}
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-2.5 min-w-0"
+            className="flex items-center min-w-0"
           >
-            <div className="w-9 h-9 rounded-xl bg-linear-to-br from-primary to-[color-mix(in_oklch,var(--primary)_80%,black_20%)] flex items-center justify-center shrink-0 shadow-md text-primary-foreground">
-              <svg className="w-5 h-5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div className="min-w-0">
-              <span className="text-sm font-bold tracking-tight text-sidebar-foreground block truncate">
-                LMS Portal
-              </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary block truncate">
-                Enterprise
-              </span>
-            </div>
+            <BrandLogo size="sm" showSubtitle={true} />
           </Link>
           <button
             onClick={() => setMobileOpen(false)}
@@ -254,7 +243,7 @@ export function AppShell({
           <div className="p-2.5 rounded-xl bg-sidebar-accent/60 dark:bg-sidebar-accent/30 border border-sidebar-border/70 flex items-center justify-between gap-2 shadow-2xs">
             <div className="min-w-0">
               <p className="text-[11px] font-bold text-sidebar-foreground truncate uppercase tracking-wider">
-                {myOrg?.name || user.org || "Acme Corp"}
+                {myOrg?.name || user.org || "ESSCI"}
               </p>
               <p className="text-[10px] text-muted-foreground truncate capitalize">
                 {user.role.replace("-", " ")} {user.department ? `· ${user.department}` : ""}
@@ -338,22 +327,12 @@ export function AppShell({
       >
         {/* Sidebar Brand Header */}
         <div className={cn("flex items-center h-16 border-b border-sidebar-border/80", isCollapsed ? "justify-center px-0" : "justify-between px-3.5")}>
-          <Link href={`/${user.role}/dashboard`} className={cn("flex items-center min-w-0 group/brand", isCollapsed ? "justify-center" : "gap-2.5")}>
-            <div className="w-9 h-9 rounded-xl bg-linear-to-br from-primary to-[color-mix(in_oklch,var(--primary)_80%,black_20%)] flex items-center justify-center shrink-0 shadow-md shadow-primary/25 ring-1 ring-white/20 dark:ring-white/10 group-hover/brand:scale-105 transition-transform duration-200">
-              <svg className="w-5 h-5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            {!isCollapsed && (
-              <div className="min-w-0">
-                <span className="text-sm font-bold tracking-tight text-sidebar-foreground block truncate">
-                  LMS Portal
-                </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary block truncate">
-                  Enterprise
-                </span>
-              </div>
-            )}
+          <Link href={`/${user.role}/dashboard`} className={cn("flex items-center min-w-0", isCollapsed ? "justify-center" : "")}>
+            <BrandLogo
+              size={isCollapsed ? "sm" : "md"}
+              isCollapsed={isCollapsed}
+              showSubtitle={true}
+            />
           </Link>
         </div>
 
@@ -363,7 +342,7 @@ export function AppShell({
             <div className="p-2.5 rounded-xl bg-sidebar-accent/60 dark:bg-sidebar-accent/30 border border-sidebar-border/70 flex items-center justify-between gap-2 shadow-2xs">
               <div className="min-w-0">
                 <p className="text-[11px] font-bold text-sidebar-foreground truncate uppercase tracking-wider">
-                  {myOrg?.name || user.org || "Acme Corp"}
+                  {myOrg?.name || user.org || "ESSCI"}
                 </p>
                 <p className="text-[10px] text-muted-foreground truncate capitalize">
                   {user.role.replace("-", " ")} {user.department ? `· ${user.department}` : ""}

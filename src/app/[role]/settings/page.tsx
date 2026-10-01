@@ -559,7 +559,7 @@ export default function AccountSettingsPage() {
                   <Input
                     value={security.domainWhitelist}
                     onChange={(e) => updateSecurity({ domainWhitelist: e.target.value })}
-                    placeholder="acme.com, subsidiary.acme.com"
+                    placeholder="essci.org, academy.essci.org"
                   />
                   <p className="text-xs text-text-tertiary">
                     Comma-separated list of domains permitted to register or sign in via SSO
@@ -927,7 +927,7 @@ export default function AccountSettingsPage() {
                     size="sm"
                     className="text-xs text-brand-500"
                     onClick={() => {
-                      const csv = "First Name,Last Name,Email,Role,Department\nJohn,Doe,john@acme.com,learner,Sales";
+                      const csv = "First Name,Last Name,Email,Role,Department\nAarav,Sharma,aarav.sharma@essci.org,learner,Electronics";
                       const blob = new Blob([csv], { type: "text/csv" });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement("a");

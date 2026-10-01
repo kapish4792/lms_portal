@@ -15,7 +15,7 @@ const ALL_MODULE_IDS = NAV_ITEMS.map((n) => n.id);
 
 const seedOrganizations = (): Organization[] => [
   { id: "org-platform", name: "LMS Platform", subdomain: "platform", allowSubOrgs: true, enabledModules: ALL_MODULE_IDS },
-  { id: "org-acme", name: "Acme Corp", subdomain: "acme", allowSubOrgs: true, enabledModules: ALL_MODULE_IDS },
+  { id: "org-essci", name: "ESSCI", subdomain: "essci", allowSubOrgs: true, enabledModules: ALL_MODULE_IDS },
 ];
 
 interface OrganizationsState {
@@ -49,7 +49,10 @@ export const useOrganizationsStore = create<OrganizationsState>()(
           organizations: state.organizations.map((o) => (o.id === id ? { ...o, enabledModules: enabled } : o)),
         }));
       },
-      findByName: (name) => get().organizations.find((o) => o.name === name),
+      findByName: (name) =>
+        get().organizations.find(
+          (o) => o.name === name || (name === "ESSCI" && o.name === "ESSCI") || (name === "ESSCI" && o.name === "ESSCI")
+        ),
     }),
     { name: "lms-organizations-store" }
   )

@@ -403,14 +403,14 @@ export function CertificateDesigner({
             <CertificateView
               template={currentEditingTemplate}
               previewData={{
-                learnerName: "Jamie Learner",
+                learnerName: "Rohan Deshmukh",
                 courseTitle: "Enterprise Cybersecurity & Zero Trust Architecture",
                 completionDate: new Date().toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
                 }),
-                orgName: org || "Acme Corp",
+                orgName: org || "ESSCI",
                 certificateId: "CERT-2026-PREVIEW",
               }}
             />

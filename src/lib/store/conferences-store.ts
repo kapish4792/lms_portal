@@ -33,7 +33,7 @@ const seedConferences = (): ConferenceSession[] => [
     registeredCount: 68,
     waitlistCount: 0,
     status: "upcoming",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "conf-2",
@@ -44,12 +44,12 @@ const seedConferences = (): ConferenceSession[] => [
     startTime: "10:30",
     durationMinutes: 90,
     locationType: "virtual",
-    locationDetail: "https://teams.microsoft.com/l/meetup-join/acme-nextjs",
+    locationDetail: "https://teams.microsoft.com/l/meetup-join/essci-nextjs",
     capacity: 40,
     registeredCount: 40,
     waitlistCount: 6,
     status: "upcoming",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "conf-3",
@@ -65,7 +65,7 @@ const seedConferences = (): ConferenceSession[] => [
     registeredCount: 18,
     waitlistCount: 0,
     status: "upcoming",
-    org: "Acme Corp",
+    org: "ESSCI",
   },
 ];
 

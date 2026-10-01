@@ -29,12 +29,12 @@ export const useApprovalsStore = create<ApprovalsState>()(
       requests: [
         {
           id: "req-seed-1",
-          requesterName: "Jamie Learner",
+          requesterName: "Rohan Deshmukh",
           courseId: "c-2",
           courseTitle: "Secure Coding Practices",
           status: "pending",
           requestedAt: "2026-09-24",
-          org: "Acme Corp",
+          org: "ESSCI",
         },
       ],
       requestAccess: (input) =>

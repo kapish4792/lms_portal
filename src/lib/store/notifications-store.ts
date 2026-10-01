@@ -76,10 +76,10 @@ const CORE_TRIGGER_KEYS: { key: string; label: string; subject: string; body: st
 
 export const seedTriggers = (): NotificationTrigger[] => [
   ...CORE_TRIGGER_KEYS.map((t, i) => ({
-    id: `trig-acme-${i}`,
+    id: `trig-essci-${i}`,
     ...t,
     enabled: true,
-    org: "Acme Corp",
+    org: "ESSCI",
     triggerType: "automatic" as const,
     triggerEvent: t.key,
   })),
@@ -94,24 +94,24 @@ export const seedTriggers = (): NotificationTrigger[] => [
 ];
 
 export const seedInbox = (): NotificationItem[] => [
-  // --- Acme Corp: Learner (Jamie) ---
+  // --- ESSCI: Learner (Rohan) ---
   {
     id: "notif-seed-1",
     recipientIdentifier: "learner@lms.dev",
     title: "Course Assigned: Enterprise Cloud Security",
-    body: "Hi Jamie,\n\nYou have been assigned to 'Enterprise Cloud Security: Zero-Trust & Defense-in-Depth' by your department lead.\n\nDue date: in 14 days.\nPlease complete the required modules and coding exercises before the deadline.",
+    body: "Hi Rohan,\n\nYou have been assigned to 'Enterprise Cloud Security: Zero-Trust & Defense-in-Depth' by your department lead.\n\nDue date: in 14 days.\nPlease complete the required modules and coding exercises before the deadline.",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-2",
     recipientIdentifier: "learner@lms.dev",
     title: "Certificate Issued: Full-Stack TypeScript Mastery",
-    body: "Congratulations Jamie!\n\nYou have successfully completed 'Full-Stack TypeScript Mastery' with a final assessment grade of 96%.\n\nYour cryptographic certificate (#CERT-ACME-8849) has been issued and is available for download in your Certificates dashboard.",
+    body: "Congratulations Rohan!\n\nYou have successfully completed 'Full-Stack TypeScript Mastery' with a final assessment grade of 96%.\n\nYour cryptographic certificate (#CERT-ESSCI-8849) has been issued and is available for download in your Certificates dashboard.",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-3",
@@ -120,45 +120,45 @@ export const seedInbox = (): NotificationItem[] => [
     body: "Reminder: Your access to 'Threat Modeling & Secure API Design' is scheduled to close in 7 days.\n\nYou are currently at 80% progress. Complete the remaining quiz to record your completion.",
     read: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-4",
     recipientIdentifier: "learner@lms.dev",
-    title: "Discussion Reply from Instructor Riley",
-    body: "Riley Instructor replied to your question in 'Microservices Architecture':\n\n'Great question! When configuring circuit breaker timeouts, aim for 2.5x your p99 downstream service latency...'",
+    title: "Discussion Reply from Prof. Priya Nair",
+    body: "Prof. Priya Nair replied to your question in 'Microservices Architecture':\n\n'Great question! When configuring circuit breaker timeouts, aim for 2.5x your p99 downstream service latency...'",
     read: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-5",
     recipientIdentifier: "learner@lms.dev",
-    title: "Welcome to Acme Corp Learning Portal",
-    body: "Hi Jamie,\n\nWelcome to Acme Corp! Your single sign-on corporate learning account has been activated. Explore your assigned curriculum in My Training or discover elective courses in the Catalog.",
+    title: "Welcome to ESSCI Learning Portal",
+    body: "Hi Rohan,\n\nWelcome to ESSCI! Your single sign-on corporate learning account has been activated. Explore your assigned curriculum in My Training or discover elective courses in the Catalog.",
     read: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 120).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
 
-  // --- Acme Corp: Admin (Avery) ---
+  // --- ESSCI: Admin (Dr. Rajeshwar Rao) ---
   {
     id: "notif-seed-6",
     recipientIdentifier: "admin@lms.dev",
     title: "Automated Compliance Audit: 94% Completion",
-    body: "Monthly Compliance Summary for Acme Corp:\n\n42 of 45 active staff members completed the mandatory Q3 Security & Ethics awareness training. 3 users have been flagged for automated reminder follow-up.",
+    body: "Monthly Compliance Summary for ESSCI:\n\n42 of 45 active staff members completed the mandatory Q3 Security & Ethics awareness training. 3 users have been flagged for automated reminder follow-up.",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-7",
     recipientIdentifier: "admin@lms.dev",
-    title: "New User Registration: Devon Park",
-    body: "A new department head account (depthead@lms.dev) has been registered under Engineering department at Acme Corp.",
+    title: "New User Registration: Devika Patel",
+    body: "A new department head account (depthead@lms.dev) has been registered under Engineering department at ESSCI.",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-8",
@@ -167,7 +167,7 @@ export const seedInbox = (): NotificationItem[] => [
     body: "Batch issuance of 18 certificates for 'Cloud Security Specialist' completed successfully. All learner notification emails dispatched.",
     read: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-9",
@@ -176,18 +176,18 @@ export const seedInbox = (): NotificationItem[] => [
     body: "Trigger 'inactive-nudge' executed: 4 learners who have been inactive for more than 14 days received re-engagement emails.",
     read: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
 
-  // --- Acme Corp: Instructor (Riley) ---
+  // --- ESSCI: Instructor (Prof. Priya Nair) ---
   {
     id: "notif-seed-10",
     recipientIdentifier: "instructor@lms.dev",
     title: "New Assignment Submission: Capstone Project",
-    body: "Jamie Learner has submitted the final project for 'Enterprise Cloud Security'.\n\nRubric evaluation and automated sandbox test results are ready for grading.",
+    body: "Rohan Deshmukh has submitted the final project for 'Enterprise Cloud Security'.\n\nRubric evaluation and automated sandbox test results are ready for grading.",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-11",
@@ -196,10 +196,10 @@ export const seedInbox = (): NotificationItem[] => [
     body: "Your webinar session is scheduled for tomorrow at 14:00 UTC. 26 learners are registered. The Zoom bridge link has been validated.",
     read: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
 
-  // --- Acme Corp: Manager / Dept Head (Morgan / Devon) ---
+  // --- ESSCI: Manager / Dept Head (Morgan / Devon) ---
   {
     id: "notif-seed-12",
     recipientIdentifier: "manager@lms.dev",
@@ -207,7 +207,7 @@ export const seedInbox = (): NotificationItem[] => [
     body: "Sales department update:\n- Total lessons completed: 84\n- Average assessment score: 88.5%\n- 2 members completed their onboarding path.",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
   {
     id: "notif-seed-13",
@@ -216,7 +216,7 @@ export const seedInbox = (): NotificationItem[] => [
     body: "Engineering department certification coverage reached 90% in Cloud Security & Kubernetes Operations.",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-    org: "Acme Corp",
+    org: "ESSCI",
   },
 
   // --- LMS Platform: LMS Admin / Super Admin (Alex / Sam) ---
@@ -232,8 +232,8 @@ export const seedInbox = (): NotificationItem[] => [
   {
     id: "notif-seed-15",
     recipientIdentifier: "super@lms.dev",
-    title: "Tenant Onboarding Verified: Acme Corp",
-    body: "Organization Acme Corp verified domain routing and provisioned 120 enterprise seats. Dedicated SSO endpoint active.",
+    title: "Tenant Onboarding Verified: ESSCI",
+    body: "Organization ESSCI verified domain routing and provisioned 120 enterprise seats. Dedicated SSO endpoint active.",
     read: false,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
     org: "LMS Platform",
@@ -322,7 +322,7 @@ export const useNotificationsStore = create<NotificationsState>()(
         })),
       getTriggersForOrg: (org) => {
         const list = get().triggers.filter((t) => t.org === org);
-        return list.length > 0 ? list : get().triggers.filter((t) => t.org === "Acme Corp");
+        return list.length > 0 ? list : get().triggers.filter((t) => t.org === "ESSCI");
       },
     }),
     {

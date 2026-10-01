@@ -91,11 +91,11 @@ const SAMPLE_DIRECT_VIDEO = 'https://interactive-examples.mdn.mozilla.net/media/
 const seedCourses = (): Course[] => [
   {
     id: 'c-1',
-    title: 'Onboarding 2026: Acme Engineering & Culture',
+    title: 'Onboarding 2026: ESSCI Electronics & Culture',
     type: 'course',
     category: 'Compliance',
     department: 'Engineering',
-    org: 'Acme Corp',
+    org: 'ESSCI',
     authorId: 'instructor@lms.dev',
     coverImage: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1200&auto=format&fit=crop&q=80',
     objectives: [
@@ -117,7 +117,7 @@ const seedCourses = (): Course[] => [
         id: 's-1',
         title: 'Getting Started & Compliance',
         lessons: [
-          { id: 'l-1', title: 'Welcome to Acme Corp', type: 'video', videoUrl: SAMPLE_DIRECT_VIDEO },
+          { id: 'l-1', title: 'Welcome to ESSCI', type: 'video', videoUrl: SAMPLE_DIRECT_VIDEO },
           { id: 'l-2', title: 'Code of Conduct & Ethics Quiz', type: 'quiz' },
           {
             id: 'l-assign-1',
@@ -165,7 +165,7 @@ const seedCourses = (): Course[] => [
     type: 'course',
     category: 'Technical Skills',
     department: 'Engineering',
-    org: 'Acme Corp',
+    org: 'ESSCI',
     authorId: 'instructor@lms.dev',
     coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80',
     objectives: [
@@ -201,7 +201,7 @@ const seedCourses = (): Course[] => [
     type: 'course',
     category: 'Leadership',
     department: 'Management',
-    org: 'Acme Corp',
+    org: 'ESSCI',
     authorId: 'instructor@lms.dev',
     coverImage: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&auto=format&fit=crop&q=80',
     objectives: [
@@ -232,7 +232,7 @@ const seedCourses = (): Course[] => [
     type: 'course',
     category: 'Technical Skills',
     department: 'Engineering',
-    org: 'Acme Corp',
+    org: 'ESSCI',
     authorId: 'instructor@lms.dev',
     coverImage: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80',
     objectives: [
@@ -263,7 +263,7 @@ const seedCourses = (): Course[] => [
     type: 'course',
     category: 'Sales Enablement',
     department: 'Sales',
-    org: 'Acme Corp',
+    org: 'ESSCI',
     authorId: 'instructor@lms.dev',
     coverImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop&q=80',
     objectives: [
@@ -294,7 +294,7 @@ const seedCourses = (): Course[] => [
     type: 'course',
     category: 'Technical Skills',
     department: 'Engineering',
-    org: 'Acme Corp',
+    org: 'ESSCI',
     authorId: 'instructor@lms.dev',
     coverImage: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&auto=format&fit=crop&q=80',
     objectives: [
@@ -325,7 +325,7 @@ const seedCourses = (): Course[] => [
     type: 'course',
     category: 'Compliance',
     department: 'Legal',
-    org: 'Acme Corp',
+    org: 'ESSCI',
     authorId: 'instructor@lms.dev',
     coverImage: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80',
     objectives: [

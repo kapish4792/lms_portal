@@ -27,7 +27,7 @@ const seedLibrary: CuratedCourse[] = [
     durationHours: 2.5,
     complianceCert: "GDPR / CCPA Audit Validated",
     skills: ["Data Privacy", "Regulatory Compliance", "Information Governance"],
-    importedOrgs: ["Acme Corp"],
+    importedOrgs: ["ESSCI"],
   },
   {
     id: "lib-2",
@@ -53,7 +53,7 @@ const seedLibrary: CuratedCourse[] = [
     durationHours: 1.5,
     complianceCert: "OSHA 1910 Compliant",
     skills: ["Workplace Safety", "OSHA Compliance", "Incident Prevention"],
-    importedOrgs: ["Acme Corp"],
+    importedOrgs: ["ESSCI"],
   },
   {
     id: "lib-4",

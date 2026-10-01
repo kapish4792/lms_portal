@@ -55,7 +55,7 @@ export default function NotificationsSettingsPage() {
   const triggers = useMemo(() => {
     const list = allTriggers.filter((t) => t.org === user?.org);
     if (list.length > 0) return list;
-    return allTriggers.filter((t) => t.org === "Acme Corp" || t.org === "LMS Platform");
+    return allTriggers.filter((t) => t.org === "ESSCI" || t.org === "LMS Platform");
   }, [allTriggers, user?.org]);
 
   const sent = useMemo(() => {

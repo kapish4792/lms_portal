@@ -19,8 +19,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LMS Portal",
-  description: "Modern Learning Management System",
+  title: "ESSCI Skilling India in Electronics",
+  description: "Electronic Sector Skills Council of India - Skilling India in Electronics LMS Platform",
+  icons: {
+    icon: "/logo.jpg",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

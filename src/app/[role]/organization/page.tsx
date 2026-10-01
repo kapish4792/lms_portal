@@ -61,11 +61,11 @@ function CreateOrgDialog({
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label>Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Acme EMEA" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. ESSCI North Region" />
           </div>
           <div className="space-y-1.5">
             <Label>Subdomain</Label>
-            <Input value={subdomain} onChange={(e) => setSubdomain(e.target.value)} placeholder="acme-emea" />
+            <Input value={subdomain} onChange={(e) => setSubdomain(e.target.value)} placeholder="essci-north" />
           </div>
           {isSuperAdmin && (
             <label className="flex items-center justify-between rounded-lg border border-surface-border px-3 py-2.5">

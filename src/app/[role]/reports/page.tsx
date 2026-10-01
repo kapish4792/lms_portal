@@ -1106,7 +1106,7 @@ export default function ReportsPage() {
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">Recipient Email(s)</label>
                     <Input
-                      placeholder="compliance@acme.com, auditteam@acme.com"
+                      placeholder="compliance@essci.org, auditteam@essci.org"
                       value={scheduleEmail}
                       onChange={(e) => setScheduleEmail(e.target.value)}
                     />

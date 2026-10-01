@@ -32,9 +32,9 @@ export const usersByRole = [
 ];
 
 export const adminTimeline = [
-  { actor: "Avery Chen", action: "added a new user", target: "Jamie Learner", time: "12m ago" },
-  { actor: "Devon Park", action: "published a course", target: "Onboarding 2026", time: "1h ago" },
-  { actor: "Avery Chen", action: "created a group", target: "Sales — APAC", time: "3h ago" },
+  { actor: "Dr. Rajeshwar Rao", action: "added a new user", target: "Rohan Deshmukh", time: "12m ago" },
+  { actor: "Devika Patel", action: "published a course", target: "Onboarding 2026", time: "1h ago" },
+  { actor: "Dr. Rajeshwar Rao", action: "created a group", target: "Electronics — Delhi NCR", time: "3h ago" },
   { actor: "System", action: "completed a data export", target: "Q3 compliance report", time: "6h ago" },
 ];
 
@@ -77,8 +77,8 @@ export const authoredCourses = [
 // Section 3.3.G — Manager Dashboard
 export const teamCompliance = { compliant: 18, total: 24 };
 export const overdueTraining = [
-  { name: "Riley Instructor", course: "Data Privacy & Compliance", daysOverdue: 4 },
-  { name: "Jamie Learner", course: "Workplace Safety Fundamentals", daysOverdue: 1 },
+  { name: "Prof. Priya Nair", course: "Data Privacy & Compliance", daysOverdue: 4 },
+  { name: "Rohan Deshmukh", course: "Workplace Safety Fundamentals", daysOverdue: 1 },
 ];
 export const skillCoverage = [
   { category: "Compliance", coverage: 88 },
@@ -86,8 +86,8 @@ export const skillCoverage = [
   { category: "Leadership", coverage: 34 },
 ];
 export const approvalInbox = [
-  { requester: "Jamie Learner", item: "Enrollment: Leadership Essentials", requestedAgo: "1h ago" },
-  { requester: "Riley Instructor", item: "Seat assignment: Secure Coding Practices", requestedAgo: "1d ago" },
+  { requester: "Rohan Deshmukh", item: "Enrollment: Leadership Essentials", requestedAgo: "1h ago" },
+  { requester: "Prof. Priya Nair", item: "Seat assignment: Secure Coding Practices", requestedAgo: "1d ago" },
 ];
 
 export function dashboardGreeting(role: Role): string {
