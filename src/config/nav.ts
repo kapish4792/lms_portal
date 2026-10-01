@@ -33,6 +33,7 @@ import {
   Users,
   Award,
   Library,
+  ClipboardCheck,
 } from "lucide-react";
 import type { RoleSlug, NavGroup } from "@/config/roles";
 
@@ -157,6 +158,14 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Inbox,
     roles: ["manager", "org-admin", "dept-head"],
     groups: ["manager"],
+  },
+  {
+    id: "grading",
+    label: "SpeedGrader",
+    href: "grading",
+    icon: ClipboardCheck,
+    roles: ["instructor", "org-admin", "dept-head", "super-admin"],
+    groups: ["instructor", "admin"],
   },
   {
     id: "calendar",

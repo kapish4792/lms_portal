@@ -18,31 +18,79 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type { Lesson } from "@/lib/store/courses-store";
+import { useSubmissionsStore } from "@/lib/store/submissions-store";
+import type { MockUser } from "@/lib/mock/users";
 
 export function AssignmentPlayer({
   lesson,
   isCompleted,
   onComplete,
   onNextLesson,
+  courseTitle = "Onboarding 2026: ESSCI Electronics & Culture",
+  courseId = "c-1",
+  user,
 }: {
   lesson: Lesson;
   isCompleted: boolean;
   onComplete: () => void;
   onNextLesson?: () => void;
+  courseTitle?: string;
+  courseId?: string;
+  user?: MockUser | null;
 }) {
-  const [submissionTab, setSubmissionTab] = useState<"text" | "upload">("text");
-  const [repoUrl, setRepoUrl] = useState("https://github.com/essci-org/security-hardening-rfc");
-  const [notes, setNotes] = useState(
-    "Implemented role-based token sanitization with AES-GCM encryption for all PII data payload boundaries. Added automated unit and integration tests covering OWASP injection vectors."
+  const currentUserId = user?.identifier || "learner@lms.dev";
+  const currentUserName = user?.name || "Rohan Deshmukh";
+
+  const submissions = useSubmissionsStore((s) => s.submissions);
+  const submitAssignment = useSubmissionsStore((s) => s.submitAssignment);
+  const existingSubmission = submissions.find(
+    (s) => s.lessonId === lesson.id && s.userId === currentUserId
   );
-  const [files, setFiles] = useState<Array<{ name: string; size: string }>>([
-    { name: "architecture_threat_model_v2.pdf", size: "2.4 MB" },
-    { name: "compliance_audit_checklist.xlsx", size: "840 KB" },
-  ]);
-  const [submitted, setSubmitted] = useState(isCompleted);
+
+  const [submissionTab, setSubmissionTab] = useState<"text" | "upload">(
+    existingSubmission?.submissionType === "upload" ? "upload" : "text"
+  );
+  const [repoUrl, setRepoUrl] = useState(
+    existingSubmission?.repoUrl || "https://github.com/essci-org/security-hardening-rfc"
+  );
+  const [notes, setNotes] = useState(
+    existingSubmission?.notes ||
+      "Implemented role-based token sanitization with AES-GCM encryption for all PII data payload boundaries. Added automated unit and integration tests covering OWASP injection vectors."
+  );
+  const [files, setFiles] = useState<Array<{ name: string; size: string }>>(
+    existingSubmission?.files?.length
+      ? existingSubmission.files
+      : [
+          { name: "architecture_threat_model_v2.pdf", size: "2.4 MB" },
+          { name: "compliance_audit_checklist.xlsx", size: "840 KB" },
+        ]
+  );
+  const [submitted, setSubmitted] = useState(
+    isCompleted || existingSubmission?.status === "graded" || existingSubmission?.status === "pending"
+  );
+
+  const isGraded = existingSubmission?.status === "graded";
+  const score = existingSubmission?.totalScore ?? (isGraded ? 96 : undefined);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    submitAssignment({
+      courseId,
+      courseTitle,
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      userId: currentUserId,
+      userName: currentUserName,
+      submissionType: submissionTab,
+      repoUrl,
+      notes,
+      files,
+      rubricScores: [
+        { criterion: "Threat Modeling & Trust Boundaries", points: 32, maxPoints: 35 },
+        { criterion: "Code Validation & Sanitization", points: 34, maxPoints: 35 },
+        { criterion: "Security Policy Documentation", points: 28, maxPoints: 30 },
+      ],
+    });
     setSubmitted(true);
     onComplete();
   };
@@ -74,14 +122,20 @@ export function AssignmentPlayer({
 
         <Badge
           className={`px-3 py-1 font-bold text-xs self-start sm:self-center gap-1.5 ${
-            submitted
+            isGraded
               ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+              : submitted
+              ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30"
               : "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30"
           }`}
         >
-          {submitted ? (
+          {isGraded ? (
             <>
-              <CheckCircle2 className="w-3.5 h-3.5" /> Submitted & Graded (96/100)
+              <CheckCircle2 className="w-3.5 h-3.5" /> Graded: {score}/100
+            </>
+          ) : submitted ? (
+            <>
+              <Clock className="w-3.5 h-3.5" /> Submitted (Pending Instructor Review)
             </>
           ) : (
             <>
@@ -122,100 +176,86 @@ export function AssignmentPlayer({
           </div>
           <div className="p-3 rounded-lg border border-border bg-card space-y-1">
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span>Audit & Logging</span>
+              <span>Documentation</span>
               <span className="text-primary font-mono">30 pts</span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Structured telemetry without logging cleartext secrets.
+              Comprehensive RFC format with security policies.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Submission Workspace */}
+      {/* Submission Form or Graded Feedback View */}
       {!submitted ? (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Upload className="w-4 h-4 text-primary" /> Your Submission
-            </h3>
-            <div className="flex items-center gap-1 bg-muted p-1 rounded-lg border border-border">
-              <button
-                type="button"
-                onClick={() => setSubmissionTab("text")}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                  submissionTab === "text"
-                    ? "bg-primary text-primary-foreground font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Repository & Notes
-              </button>
-              <button
-                type="button"
-                onClick={() => setSubmissionTab("upload")}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                  submissionTab === "upload"
-                    ? "bg-primary text-primary-foreground font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                File Attachments ({files.length})
-              </button>
-            </div>
+          <div className="flex items-center gap-2 border-b border-border pb-2">
+            <button
+              type="button"
+              onClick={() => setSubmissionTab("text")}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                submissionTab === "text"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Text & Repository URL
+            </button>
+            <button
+              type="button"
+              onClick={() => setSubmissionTab("upload")}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                submissionTab === "upload"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              File Attachments ({files.length})
+            </button>
           </div>
 
           {submissionTab === "text" ? (
             <div className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold text-foreground block mb-1.5">
-                  GitHub / Git Repository or Pull Request URL
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5 text-primary" /> Repository or Documentation Link
                 </label>
-                <div className="relative">
-                  <Link2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={repoUrl}
-                    onChange={(e) => setRepoUrl(e.target.value)}
-                    placeholder="https://github.com/..."
-                    className="pl-9 text-xs font-mono"
-                  />
-                </div>
+                <Input
+                  value={repoUrl}
+                  onChange={(e) => setRepoUrl(e.target.value)}
+                  placeholder="https://github.com/organization/project"
+                  className="text-xs font-mono"
+                />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-foreground block mb-1.5">
-                  Submission Summary & Solution Walkthrough
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">
+                  Implementation Summary & Defense Notes
                 </label>
                 <textarea
                   rows={4}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Explain your approach, design decisions, and test cases..."
-                  className="w-full p-3 rounded-lg bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-primary resize-none leading-relaxed"
+                  placeholder="Summarize your architecture choices..."
+                  className="w-full text-xs p-3 rounded-lg border border-border bg-background text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40 resize-none"
                 />
               </div>
             </div>
           ) : (
             <div className="space-y-3">
-              {/* File dropzone simulator */}
-              <div className="border-2 border-dashed border-border hover:border-primary/60 rounded-xl p-6 text-center bg-muted/20 transition-colors cursor-pointer">
-                <Upload className="w-8 h-8 text-primary mx-auto mb-2" />
-                <p className="text-xs font-semibold text-foreground">
-                  Click or drag files here to upload
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Supported formats: PDF, DOCX, ZIP, MD (Max 25 MB)
-                </p>
+              <div className="border-2 border-dashed border-border rounded-xl p-5 text-center bg-muted/20 hover:bg-muted/40 transition-colors cursor-pointer">
+                <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs font-semibold text-foreground">Click to upload or drag files here</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Supports PDF, DOCX, ZIP up to 25MB</p>
               </div>
 
-              {/* Uploaded File List */}
               <div className="space-y-2">
                 {files.map((file, idx) => (
                   <div
                     key={idx}
-                    className="p-2.5 rounded-lg border border-border bg-card flex items-center justify-between text-xs"
+                    className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-card text-xs"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2 truncate">
                       <FileCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                       <span className="text-foreground font-medium truncate">{file.name}</span>
                       <span className="text-muted-foreground text-[10px] font-mono">({file.size})</span>
@@ -245,16 +285,34 @@ export function AssignmentPlayer({
       ) : (
         /* Submitted State & Instructor Feedback */
         <div className="space-y-4">
-          <div className="p-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 space-y-4">
+          <div
+            className={`p-5 rounded-xl border space-y-4 ${
+              isGraded
+                ? "border-emerald-500/30 bg-emerald-500/10"
+                : "border-blue-500/30 bg-blue-500/10"
+            }`}
+          >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                  <Award className="w-6 h-6" />
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                    isGraded
+                      ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                      : "bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                  }`}
+                >
+                  {isGraded ? <Award className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
                 </div>
                 <div>
-                  <h4 className="text-base font-bold text-foreground">Assignment Graded: 96 / 100</h4>
+                  <h4 className="text-base font-bold text-foreground">
+                    {isGraded
+                      ? `Assignment Graded: ${score} / 100`
+                      : "Submission Received — Awaiting Evaluation"}
+                  </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Evaluated by Lead Instructor • Grade: Excellent (A)
+                    {isGraded
+                      ? `Evaluated by ${existingSubmission?.gradedBy || "Lead Instructor"} • Status: Complete`
+                      : "Your submission has been queued for instructor review and rubric evaluation."}
                   </p>
                 </div>
               </div>
@@ -263,28 +321,47 @@ export function AssignmentPlayer({
                 <Button
                   size="sm"
                   onClick={onNextLesson}
-                  className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
+                  className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs"
                 >
                   Continue to Next Lesson <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               )}
             </div>
 
-            <div className="p-3.5 rounded-lg bg-card border border-emerald-500/20 space-y-1.5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                <Sparkles className="w-3.5 h-3.5" /> Instructor Evaluation & Feedback:
+            {/* If graded, show rubric breakdown and feedback */}
+            {isGraded && (
+              <div className="space-y-3">
+                {existingSubmission?.rubricScores && existingSubmission.rubricScores.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {existingSubmission.rubricScores.map((r, i) => (
+                      <div key={i} className="p-2.5 rounded-lg border border-border bg-card/80 text-xs">
+                        <div className="flex justify-between font-semibold text-foreground">
+                          <span className="truncate">{r.criterion}</span>
+                          <span className="text-emerald-600 font-mono ml-1">{r.points}/{r.maxPoints}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="p-3.5 rounded-lg bg-card border border-emerald-500/20 space-y-1.5">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    <Sparkles className="w-3.5 h-3.5" /> Instructor Evaluation & Feedback:
+                  </div>
+                  <p className="text-xs text-foreground/90 leading-relaxed">
+                    “{existingSubmission?.feedback ||
+                      "Outstanding threat model matrix and architecture documentation. The input sanitization test coverage was comprehensive and effectively mitigated SQL injection risks. Keep up the high engineering standard!"}”
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-foreground/90 leading-relaxed">
-                “Outstanding threat model matrix and architecture documentation. The input sanitization test coverage was comprehensive and effectively mitigated SQL injection risks. Keep up the high engineering standard!”
-              </p>
-            </div>
+            )}
 
             <div className="text-xs text-muted-foreground flex items-center justify-between pt-1">
               <span>Submitted repository: <strong className="text-foreground font-mono">{repoUrl}</strong></span>
               <button
                 type="button"
                 onClick={() => setSubmitted(false)}
-                className="text-primary hover:underline text-[11px]"
+                className="text-primary hover:underline text-[11px] cursor-pointer"
               >
                 Edit or Resubmit
               </button>

@@ -124,6 +124,7 @@ export function AppShell({
       organization: "Organization",
       subscription: "Subscription",
       approvals: "Approvals",
+      grading: "SpeedGrader",
       settings: "Settings",
       profile: "Profile & Security",
       player: "Lesson Player",
@@ -460,6 +461,63 @@ export function AppShell({
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
+            {/* Quick Role Switcher for seamless click-through testing */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-bold hover:bg-primary/20 transition-colors cursor-pointer"
+                    title="Switch Active Persona"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Role: {user.role}</span>
+                  </button>
+                }
+              />
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Switch Active Role Persona
+                </div>
+                <DropdownMenuItem
+                  onClick={() => {
+                    useAuthStore.getState().directLogin("learner@lms.dev");
+                    router.push("/learner/dashboard");
+                  }}
+                  className="cursor-pointer text-xs font-medium"
+                >
+                  🎓 Learner (Rohan Deshmukh)
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    useAuthStore.getState().directLogin("instructor@lms.dev");
+                    router.push("/instructor/dashboard");
+                  }}
+                  className="cursor-pointer text-xs font-medium"
+                >
+                  👨‍🏫 Instructor (Prof. Priya Nair)
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    useAuthStore.getState().directLogin("admin@lms.dev");
+                    router.push("/org-admin/dashboard");
+                  }}
+                  className="cursor-pointer text-xs font-medium"
+                >
+                  🏛️ Org Admin (Dr. Rajeshwar Rao)
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    useAuthStore.getState().directLogin("super@lms.dev");
+                    router.push("/super-admin/dashboard");
+                  }}
+                  className="cursor-pointer text-xs font-medium"
+                >
+                  ⚡ Super Admin (Aarav Sharma)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <NotificationBell user={user} />
             <ThemeToggle />
             {/* User Profile Dropdown Menu */}

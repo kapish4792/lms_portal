@@ -201,9 +201,9 @@ export default function CoursePlayerPage() {
 
   const playerRef = useRef<Player | null>(null);
 
-  // Active Bottom Tab
+  // Active Bottom Tab (Including Open edX Progress & Grades and Dates Timeline tabs)
   const [activeTab, setActiveTab] = useState<
-    "overview" | "qa" | "notes" | "announcements" | "reviews" | "resources" | "search"
+    "overview" | "progress" | "dates" | "qa" | "notes" | "announcements" | "reviews" | "resources" | "search"
   >("overview");
 
   // Sidebar Open/Close state
@@ -602,6 +602,9 @@ export default function CoursePlayerPage() {
                         ? handleNextLesson
                         : undefined
                     }
+                    courseTitle={course.title}
+                    courseId={course.id}
+                    user={user}
                   />
                 </div>
               ) : activeLesson?.type === "coding" ? (
@@ -693,6 +696,8 @@ export default function CoursePlayerPage() {
               <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
                 {[
                   { id: "overview", label: "Overview", icon: BookOpen },
+                  { id: "progress", label: "Progress & Grades", icon: Award },
+                  { id: "dates", label: "Dates & Schedule", icon: Clock },
                   { id: "qa", label: `Q&A (${qaList.length})`, icon: MessageSquare },
                   { id: "notes", label: `Notes (${notes.length})`, icon: FileText },
                   { id: "announcements", label: "Announcements", icon: Megaphone },
@@ -789,7 +794,231 @@ export default function CoursePlayerPage() {
                 </div>
               )}
 
-              {/* 2. Q&A TAB (Udemy Community & Instructor Discussions) */}
+              {/* 2. PROGRESS & GRADES TAB (Open edX Screen 7 / Moodle User Report) */}
+              {activeTab === "progress" && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground">Course Progress & Grade Breakdown</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Open edX standard grading policy: Passing cutoff score is 70%. Cumulative grade is derived from video completion, knowledge checks, and practical assignments.
+                    </p>
+                  </div>
+
+                  {/* Summary Metric Cards */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-4 rounded-xl border border-border bg-card">
+                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Course Progress</span>
+                      <p className="text-2xl font-black text-foreground mt-1">{progressPercentage}%</p>
+                      <span className="text-[10px] text-muted-foreground">{completedCount} of {totalLessonsCount} units finished</span>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-border bg-card">
+                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Cumulative Score</span>
+                      <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">94%</p>
+                      <span className="text-[10px] text-emerald-600 font-semibold">Passing (Threshold: 70%)</span>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-border bg-card">
+                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Graded Activities</span>
+                      <p className="text-2xl font-black text-foreground mt-1">3 / 3</p>
+                      <span className="text-[10px] text-muted-foreground">All evaluated</span>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-border bg-card">
+                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Certificate Status</span>
+                      <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-2 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4" /> Eligible
+                      </p>
+                      <span className="text-[10px] text-muted-foreground">Verified ID Issued</span>
+                    </div>
+                  </div>
+
+                  {/* Open edX Visual SVG Grade Distribution Chart */}
+                  <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground">Grade Distribution & Weighting</h3>
+                        <p className="text-xs text-muted-foreground">Visual score breakdown across curricular assignment groups</p>
+                      </div>
+                      <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                        Cutoff Threshold: 70%
+                      </Badge>
+                    </div>
+
+                    {/* Stacked / Grouped Visual Bar Chart */}
+                    <div className="space-y-3 pt-2">
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs font-semibold text-foreground">
+                          <span>Video Lectures & Theory (20% weight)</span>
+                          <span className="font-mono text-emerald-600">100% (20 / 20 pts)</span>
+                        </div>
+                        <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: "100%" }} />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs font-semibold text-foreground">
+                          <span>CAPA Knowledge Checks / Quizzes (40% weight)</span>
+                          <span className="font-mono text-primary">95% (38 / 40 pts)</span>
+                        </div>
+                        <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: "95%" }} />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs font-semibold text-foreground">
+                          <span>Practical Architecture RFC Assignment (40% weight)</span>
+                          <span className="font-mono text-purple-600 dark:text-purple-400">90% (36 / 40 pts)</span>
+                        </div>
+                        <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-purple-500 rounded-full transition-all duration-500" style={{ width: "90%" }} />
+                        </div>
+                      </div>
+
+                      {/* Cutoff Marker Visual Indicator */}
+                      <div className="pt-2 flex items-center gap-2 text-xs text-muted-foreground border-t border-border">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                        <span>Cumulative Weighted Total: <strong className="text-foreground">94 / 100 points</strong>. You comfortably exceed the 70% passing threshold!</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Certificate Claim Banner */}
+                  <div className="p-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <Award className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-base font-bold text-foreground">Verified Certificate of Completion</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Issued under ESSCI Open Standards credentialing. Cryptographically verified record.
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0"
+                      render={<Link href={`/${user.role}/certificates`} />}
+                    >
+                      <Award className="w-4 h-4" /> View Certificate
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* 3. DATES & SCHEDULE TIMELINE TAB (Open edX Screen 8 / Moodle Calendar) */}
+              {activeTab === "dates" && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-bold text-foreground">Course Dates & Milestones</h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Chronological progression schedule. Milestones adapt based on course self-pacing or cohort deadlines.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 text-xs border-border shrink-0"
+                      onClick={() => {
+                        const ics = [
+                          "BEGIN:VCALENDAR",
+                          "VERSION:2.0",
+                          "PRODID:-//ESSCI LMS//EN",
+                          "BEGIN:VEVENT",
+                          `SUMMARY:${course.title} - Final Submission`,
+                          "DESCRIPTION:Course milestone deadline",
+                          "DTSTART:20261015T183000Z",
+                          "DTEND:20261015T193000Z",
+                          "STATUS:CONFIRMED",
+                          "END:VEVENT",
+                          "END:VCALENDAR",
+                        ].join("\r\n");
+                        const blob = new Blob([ics], { type: "text/calendar" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "course_schedule.ics";
+                        a.click();
+                      }}
+                    >
+                      <FolderDown className="w-4 h-4 text-primary" /> Export Schedule (.ics)
+                    </Button>
+                  </div>
+
+                  {/* Milestone Stream */}
+                  <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
+                    <div className="relative">
+                      <div className="absolute -left-6 top-1 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">
+                        ✓
+                      </div>
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-foreground">Course Enrollment & Orientation</span>
+                          <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px]">
+                            Completed
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Account verified and enrolled in ESSCI learning track.</p>
+                        <span className="text-[11px] text-text-tertiary font-mono">Started Aug 15, 2026</span>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute -left-6 top-1 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px]">
+                        ✓
+                      </div>
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-foreground">Module 1 Knowledge Assessment (Quiz)</span>
+                          <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px]">
+                            Passed (100%)
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Automated grading verification passed on first attempt.</p>
+                        <span className="text-[11px] text-text-tertiary font-mono">Completed Sep 12, 2026</span>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute -left-6 top-1 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px]">
+                        ✓
+                      </div>
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-foreground">Architecture Threat Modeling RFC</span>
+                          <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px]">
+                            Graded (96/100)
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Evaluated by Lead Instructor with detailed rubric scoring.</p>
+                        <span className="text-[11px] text-text-tertiary font-mono">Submitted Sep 28, 2026</span>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute -left-6 top-1 w-5 h-5 rounded-full bg-muted border border-border text-muted-foreground flex items-center justify-center text-[10px]">
+                        ○
+                      </div>
+                      <div className="p-4 rounded-xl border border-border bg-card/60 space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-foreground">Course Completion & Verified Credential</span>
+                          <Badge variant="outline" className="text-amber-500 border-amber-500/30 text-[10px]">
+                            Due Oct 15, 2026
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Final course survey and official verified certificate dispatch.</p>
+                        <span className="text-[11px] text-muted-foreground font-mono">Deadline: 23:59 UTC</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Q&A TAB (Udemy Community & Instructor Discussions) */}
               {activeTab === "qa" && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
