@@ -21,6 +21,8 @@
 4. [Reference Priority](#4-reference-priority)
 5. [Implemented Roles](#5-implemented-roles)
 6. [Implemented Screens](#6-implemented-screens)
+   - [6.1 Baseline Research Screens (SCR-01 to SCR-15)](#61-baseline-research-screens-scr-01-to-scr-15)
+   - [6.2 Additional Enterprise Screens (SCR-16 to SCR-30)](#62-additional-enterprise-screens-scr-16-to-scr-30)
 7. [Implemented Routes](#7-implemented-routes)
 8. [Student Journey](#8-student-journey)
 9. [Instructor Journey](#9-instructor-journey)
@@ -29,7 +31,9 @@
 12. [Open edX Reference Mapping (With Reference Images)](#12-open-edx-reference-mapping-with-reference-images-at-the-point-of-reference)
 13. [Moodle Reference Mapping (With Reference Images)](#13-moodle-reference-mapping-with-reference-images-at-the-point-of-reference)
 14. [Combined / Adapted Functionality](#14-combined--adapted-functionality)
-15. [Newly Designed Functionality](#15-newly-designed-functionality)
+15. [Newly Designed & Additional Enterprise Functionality](#15-newly-designed--additional-enterprise-functionality)
+   - [15.1 Core Innovation Features](#151-core-innovation-features)
+   - [15.2 Additional Enterprise Modules Beyond Baseline Research](#152-additional-enterprise-modules-beyond-baseline-research)
 16. [Screenshot Evidence (Implemented Portal Workflows)](#16-screenshot-evidence-implemented-portal-workflows)
 17. [Mock Data & Simulated State Architecture](#17-mock-data--simulated-state-architecture)
 18. [Known Limitations](#18-known-limitations)
@@ -59,7 +63,8 @@ lms-portal/
 ├── docs/
 │   ├── OpenedX.md                             # Primary reference research document
 │   ├── Moodle.md                              # Secondary reference research document
-│   └── LMS-IMPLEMENTATION-REFERENCE-MAPPING.md # Traceability specification (this document)
+│   ├── LMS-IMPLEMENTATION-REFERENCE-MAPPING.md # Traceability specification (this document)
+│   └── LMS-ADDITIONAL-FUNCTIONALITY-SPECIFICATION.md # Unlisted enterprise features companion
 ├── screenshots/                               # Relative-linked screenshot repository
 │   ├── openedx/                               # Genuine Open edX baseline reference screenshots
 │   ├── moodle/                                # Genuine Moodle baseline reference screenshots
@@ -68,12 +73,12 @@ lms-portal/
 │   └── admin/                                 # Implemented governance & administrative captures
 ├── src/
 │   ├── app/
-│   │   ├── (public)/page.tsx                  # Public catalog & course storefront
+│   │   ├── page.tsx                           # Public catalog, storefront & course purchasing
 │   │   ├── auth/                              # Split-canvas authentication, OTP, MFA, recovery
 │   │   │   ├── login/page.tsx                 # Identifier, OTP verification, Social SSO, Demo logins
-│   │   │   ├── signup/page.tsx                # Auto-enrollment onboarding
-│   │   │   ├── forgot-password/page.tsx       # Password recovery request
-│   │   │   └── reset-password/page.tsx        # OTP code verification & reset form
+│   │   │   ├── signup/page.tsx                # Auto-enrollment onboarding & course purchase
+│   │   │   ├── forgot-password/page.tsx       # Password recovery request with demo helpers
+│   │   │   └── reset-password/page.tsx        # 6-digit OTP verification & strength-metered reset
 │   │   └── [role]/                            # Role-based dynamic layout & navigation
 │   │       ├── layout.tsx                     # Protected shell routing & role validation
 │   │       ├── dashboard/page.tsx             # Role-specific analytics dashboard
@@ -87,37 +92,36 @@ lms-portal/
 │   │       ├── users/page.tsx                 # User directory, RBAC & bulk management
 │   │       ├── categories/page.tsx            # Multi-level category hierarchy governance
 │   │       ├── reports/page.tsx               # 12-section reporting suite & CSV export
-│   │       ├── calendar/page.tsx              # Interactive ILT & deadline calendar
-│   │       ├── conferences/page.tsx           # Virtual classroom & webinar hub
-│   │       ├── discussions/page.tsx           # Per-course social Q&A hub
-│   │       └── settings/page.tsx              # 8-tab portal governance, branding, RBAC
+│   │       ├── calendar/page.tsx              # Interactive 4-view ILT & deadline calendar
+│   │       ├── certificates/page.tsx          # Digital certificate wallet & visual designer
+│   │       ├── conferences/page.tsx           # Virtual classroom & webinar hub (ILT)
+│   │       ├── discussions/page.tsx           # Per-course social Q&A hub & verified answers
+│   │       ├── content-library/page.tsx       # Curated compliance catalog (SOC 2, HIPAA, GDPR)
+│   │       ├── learning-paths/                # Onboarding journey builder & sequential unlock
+│   │       ├── course-store/                  # B2B seat licensing & marketplace landing pages
+│   │       ├── groups/                        # Static & dynamic rule cohorts, automated enroll
+│   │       ├── organization/                  # Super Admin sub-org tree & dynamic module gating
+│   │       ├── approvals/                     # Manager approval triage inbox
+│   │       ├── notifications/                 # 7 automated triggers & system alert settings
+│   │       ├── subscription/                  # SaaS seat & storage meters, plan tier upgrades
+│   │       ├── profile/                       # User profile, password update, 2FA, session revoke
+│   │       └── settings/page.tsx              # 8-tab portal governance, branding, RBAC, glossary
 │   ├── components/
 │   │   ├── layout/
 │   │   │   ├── AppShell.tsx                   # Responsive sidebar, topbar & 1-click Role Switcher
-│   │   │   └── RoleSwitcher.tsx               # Dynamic multi-role testing toggle
-│   │   ├── dashboard/                         # Dedicated role dashboards
-│   │   │   ├── LearnerDashboard.tsx           # Quick resume, weekly progress, upcoming deadlines
-│   │   │   ├── InstructorDashboard.tsx        # Active courses, pending submissions, SpeedGrader link
-│   │   │   ├── AdminDashboard.tsx             # KPI cards, user distribution, activity feed
-│   │   │   └── ManagerDashboard.tsx           # Team compliance & approval queue
-│   │   ├── courses/                           # Course player & authoring components
-│   │   │   ├── CourseCard.tsx                 # Udemy-style 16:9 thumbnail, rating, ribbon, syllabus
-│   │   │   ├── CourseDetailsModal.tsx         # Open edX Course About & syllabus preview
-│   │   │   ├── VideoPlayer.tsx                # Cinema video player with hotkeys & playback speed
-│   │   │   ├── QuizPlayer.tsx                 # Inline CAPA assessment with explanation feedback
-│   │   │   ├── AssignmentPlayer.tsx           # Submission engine with rubric & feedback display
-│   │   │   └── CourseForm.tsx                 # Studio curriculum builder
+│   │   │   ├── RoleSwitcher.tsx               # Dynamic multi-role testing toggle
+│   │   │   └── NotificationBell.tsx           # Real-time topbar notifications drawer
+│   │   ├── dashboard/                         # Dedicated role dashboards (Learner, Instructor, Admin, Manager)
+│   │   ├── courses/                           # Player, Video.js, CAPA quiz, assignment, CourseCard, CourseForm
+│   │   ├── certificates/                      # CertificateView, CertificateDesigner, BulkIssueDialog
+│   │   ├── groups/                            # GroupForm with rule-based cohort conditions
+│   │   ├── learning-paths/                    # PathForm with mixed course + task steps
+│   │   ├── home/                              # Public storefront header, footer, hero
 │   │   └── ui/                                # Base UI / Nova atomic components
 │   └── lib/
 │       ├── permissions.ts                     # Capability matrix & departmental scoping
 │       ├── mock/                              # Seeded deterministic mock databases
-│       └── store/                             # Reactive persistent Zustand stores
-│           ├── auth-store.ts                  # User session, MFA & device trust
-│           ├── courses-store.ts               # Courseware hierarchy, lessons & media
-│           ├── enrollments-store.ts           # Learner enrollments, tracking & completions
-│           ├── submissions-store.ts           # Student submissions, rubrics & SpeedGrader marks
-│           ├── users-store.ts                 # User directory & RBAC profiles
-│           └── categories-store.ts            # Category taxonomy & color swatches
+│       └── store/                             # 19 reactive persistent Zustand stores (localStorage)
 ```
 
 ---
@@ -177,6 +181,8 @@ The platform provides dedicated navigation, permissions, and views for 4 core in
 
 ## 6. Implemented Screens
 
+### 6.1 Baseline Research Screens (SCR-01 to SCR-15)
+
 | Screen # | Screen Title | Role Access | Primary Reference | Corresponding Route |
 |---|---|---|---|---|
 | **SCR-01** | Split-Canvas Authentication & Demo Login | Public | Open edX SCR-01 / Moodle | `/auth/login` |
@@ -195,29 +201,63 @@ The platform provides dedicated navigation, permissions, and views for 4 core in
 | **SCR-14** | Course Category Governance Hierarchy | Org Admin / Super Admin | Moodle SCR-05 | `/org-admin/categories` |
 | **SCR-15** | Comprehensive Institutional Reports & Analytics | Org Admin / Super Admin | Moodle SCR-15, 16 | `/org-admin/reports` |
 
+### 6.2 Additional Enterprise Screens (SCR-16 to SCR-30)
+
+The following screens represent additional production capabilities implemented in the portal beyond the Open edX / Moodle baseline research:
+
+| Screen # | Screen Title | Role Access | Implementation Purpose | Corresponding Route |
+|---|---|---|---|---|
+| **SCR-16** | Public Marketing Storefront & Catalog | Public / Unauth | Course discovery, syllabus modal, direct purchasing & auto-enrollment funnel | `/` |
+| **SCR-17** | Self-Service Password Recovery Suite | Public | 6-digit OTP code request, email recovery helper, password strength meter | `/auth/forgot-password`, `/auth/reset-password` |
+| **SCR-18** | Virtual Classrooms & Conferences (ILT Hub) | Instructor / Admin / All | Zoom/Teams/In-person scheduling, capacity meters, waitlists, `.ics` invites | `/[role]/conferences` |
+| **SCR-19** | Course Discussions & Social Q&A Hub | All Roles | Per-course/lesson threads, upvoting, instructor verified answers, moderation | `/[role]/discussions` |
+| **SCR-20** | Curated Content Library | Super Admin / Org Admin | Enterprise catalog with SOC 2/HIPAA/GDPR compliance badges, 1-click org import | `/[role]/content-library` |
+| **SCR-21** | Learning Paths & Onboarding Journey Builder | All Roles | Mixed course + task onboarding tracks, sequential prerequisite locking, progress | `/[role]/learning-paths` |
+| **SCR-22** | Course Store & B2B Bulk Seat Licensing | Admin / Learner | Marketplace syllabus accordion, manager Request Access, seat key allocation | `/[role]/course-store` |
+| **SCR-23** | Groups & Automated Enrollment Cohorts | Admin / Instructor | Static & dynamic rule cohorts (department/role), automated course enrollment | `/[role]/groups` |
+| **SCR-24** | Multi-Tenant Organization Tree & Gating | Super Admin | Parent/sub-org hierarchy, `allowSubOrgs` permissions, per-org module gating | `/[role]/organization` |
+| **SCR-25** | Manager Approval Inbox | Manager / Admin | Dedicated triage inbox for direct report training requests and seat petitions | `/[role]/approvals` |
+| **SCR-26** | System Notifications Engine & Topbar Bell | Admin / All | 7 automated trigger events, tenant toggle, topbar unread bell & drawer | `/[role]/notifications` |
+| **SCR-27** | SaaS Subscription & Billing Portal | Super Admin / Org Admin | Seat utilization & cloud video storage meters, plan upgrades, invoice history | `/[role]/subscription` |
+| **SCR-28** | Interactive 4-View Calendar Suite | All Roles | Month/Week/Day/Agenda views, multi-type events, scheduling modal, bulk `.ics` | `/[role]/calendar` |
+| **SCR-29** | Digital Certificate Designer & Wallet | All Roles | Credential wallet, 3 layout styles, printable vector view, bulk issuance | `/[role]/certificates` |
+| **SCR-30** | User Profile, Security & Session Management | All Roles | Profile edit, password change, 2FA QR enrollment, remote device revocation | `/[role]/profile` |
+
 ---
 
 ## 7. Implemented Routes
 
-| Route | Role | Description |
-|---|---|---|
-| `/auth/login` | Public | Multi-role split-canvas login, OTP verification, 1-click role switcher |
-| `/auth/signup` | Public | Onboarding registration flow with direct course enrollment linkage |
-| `/learner/dashboard` | Learner | Learner cockpit with resume deep links, progress trackers, deadlines |
-| `/learner/catalog` | Learner | Faceted course catalog with category filters and syllabus modal |
-| `/learner/my-training` | Learner | Enrolled courses directory with completion statuses and launch buttons |
-| `/learner/courses/[courseId]/player` | Learner | Full-screen course player, Video.js, transcript sync, quiz, progress |
-| `/learner/calendar` | Learner | Interactive monthly, weekly, daily agenda of training milestones |
-| `/learner/certificates` | Learner | Digital certificate wallet with verification codes and print dialogs |
-| `/instructor/dashboard` | Instructor | Authoring hub, submission queues, active courses, enrollment stats |
-| `/instructor/courses` | Instructor | Course directory with department-level ownership badges |
-| `/instructor/courses/[courseId]` | Instructor | Studio-style 3-tier curriculum builder with live validation checklist |
-| `/instructor/grading` | Instructor | Split-screen SpeedGrader and 2D Grader Report evaluation suite |
-| `/org-admin/dashboard` | Org Admin | Executive analytics cockpit with KPI cards and portal activity line chart |
-| `/org-admin/users` | Org Admin | User table with bulk status toggle, role assignment, CSV export |
-| `/org-admin/categories` | Org Admin | Course taxonomy manager with swatch colors and course counts |
-| `/org-admin/reports` | Org Admin | 12-section reporting suite (completion matrix, audit timeline, surveys) |
-| `/org-admin/settings` | Org Admin | Platform settings: branding, glossary override, RBAC, session management |
+| Route | Role Access | Description & Primary Feature | Category |
+|---|---|---|---|
+| `/` | Public | Public course catalog storefront, search, category pills, syllabus preview modal, direct checkout | Additional |
+| `/auth/login` | Public | Multi-role split-canvas login, OTP verification, 1-click role switcher | Baseline |
+| `/auth/signup` | Public | Purchaser-tailored registration with course summary, auto-provisioning & auto-enrollment | Additional |
+| `/auth/forgot-password` | Public | Password reset request with email recovery helper | Additional |
+| `/auth/reset-password` | Public | 6-digit OTP verification, real-time password strength meter, password update form | Additional |
+| `/[role]/dashboard` | All Roles | Role-adaptive dashboard (Learner, Instructor, Org Admin, Super Admin, Manager) | Baseline |
+| `/[role]/catalog` | Learner / All | Faceted course catalog with category chips, price filters, and syllabus modal | Baseline |
+| `/[role]/my-training` | Learner | Enrolled courses directory with progress bars, completion badges, launch buttons | Baseline |
+| `/[role]/courses` | Instructor / Admin | Course directory with departmental ownership badges and cross-department lock banners | Baseline |
+| `/[role]/courses/[courseId]` | Instructor / Admin | Studio-style 3-tier curriculum builder with live validation checklist | Baseline |
+| `/[role]/courses/[courseId]/player` | Learner | Full-screen course player, Video.js, transcript sync, quiz, progress | Baseline |
+| `/[role]/grading` | Instructor / Admin | Split-screen SpeedGrader and 2D Grader Report evaluation suite | Baseline |
+| `/[role]/users` | Admin Roles | User directory with search, role filtering, bulk activate/deactivate, and CSV export | Baseline |
+| `/[role]/categories` | Admin / Instructor | Course category taxonomy with custom hex swatches and course association counters | Baseline |
+| `/[role]/reports` | Admin / Staff | 12-section reporting suite: training matrix, timeline, query builder, heatmap, surveys, CSV export | Baseline |
+| `/[role]/calendar` | All Roles | 4-view interactive calendar (Month, Week, Day, Agenda), event scheduler, `.ics` sync | Additional |
+| `/[role]/certificates` | All Roles | Digital certificate wallet, 3 template themes, printable credential view, bulk issuance | Additional |
+| `/[role]/conferences` | Instructor / Admin | Virtual & physical ILT classroom scheduling, capacity tracking, waitlists, attendee registration | Additional |
+| `/[role]/discussions` | All Roles | Threaded social Q&A hub, upvoting, instructor verified answers, moderation pin/resolve | Additional |
+| `/[role]/content-library` | Admin Roles | Curated compliance catalog (SOC 2, HIPAA, GDPR), 1-click organization course import | Additional |
+| `/[role]/learning-paths` | All Roles | Onboarding journey builder, mixed course/task steps, prerequisite locking, milestone progress | Additional |
+| `/[role]/course-store` | Admin / Learner | Marketplace storefront, course landing page, syllabus accordion, B2B bulk seat licensing | Additional |
+| `/[role]/groups` | Admin / Instructor | Static and dynamic rule cohorts, automated course enrollment, average completion rollups | Additional |
+| `/[role]/organization` | Super Admin | Parent/sub-organization tree, `allowSubOrgs` permissions, per-organization module gating | Additional |
+| `/[role]/approvals` | Manager / Admin | Dedicated triage inbox for employee course access requests and seat assignment requests | Additional |
+| `/[role]/notifications` | Admin Roles | 7 automated trigger event configurations, email templates, topbar notification drawer | Additional |
+| `/[role]/subscription` | Admin Roles | SaaS subscription billing, seat & storage meters, plan upgrades, invoice history | Additional |
+| `/[role]/profile` | All Roles | User profile management, password update, 2FA QR enrollment, active device session revocation | Additional |
+| `/[role]/settings` | Org Admin / Super Admin | 8 governance tabs: branding, glossary override, font switcher, video watermark, RBAC builder | Baseline |
 
 ---
 
@@ -481,9 +521,15 @@ Several features synthesize patterns from both reference LMS architectures:
 
 ---
 
-## 15. Newly Designed Functionality
+## 15. Newly Designed & Additional Enterprise Functionality
 
-Functionality designed specifically for this portal to exceed traditional LMS limitations:
+In addition to synthesizing Open edX and Moodle patterns, the portal implements a comprehensive suite of **newly designed and enterprise-grade functionalities** that solve real-world LMS administrative, operational, and commercial needs.
+
+*(For detailed architectural specifications of all unlisted modules, see the companion document [`docs/LMS-ADDITIONAL-FUNCTIONALITY-SPECIFICATION.md`](LMS-ADDITIONAL-FUNCTIONALITY-SPECIFICATION.md)).*
+
+---
+
+### 15.1 Core Innovation Features
 
 1. **Top-Navigation 1-Click Role Switcher:**  
    - A dedicated segmented switcher in `AppShell` header allows immediate transitions between Learner, Instructor, Org Admin, and Super Admin states without requiring logout/login cycles during demonstrations.
@@ -493,6 +539,78 @@ Functionality designed specifically for this portal to exceed traditional LMS li
    - Learners can export course deadlines and live webinar milestones directly into Outlook, Google Calendar, or Apple Calendar with one click.
 4. **Departmental Resource Guardrails:**  
    - Visual `DepartmentLockBanner` alerts instructors when attempting to edit courses belonging to an adjacent department, with a functional "Request Co-Author Access" trigger.
+
+---
+
+### 15.2 Additional Enterprise Modules Beyond Baseline Research
+
+The portal implements 14 major additional enterprise modules that extend beyond standard Open edX and Moodle specifications:
+
+#### 1. Virtual Classrooms & Conferences (ILT Hub) (`/[role]/conferences`)
+* **Store:** `conferences-store.ts` (`lms-conferences-store`) | **File:** `src/app/[role]/conferences/page.tsx` (434 lines)
+* **Functionality:** Multi-format session scheduling for both virtual meetings (Zoom, Microsoft Teams, Google Meet) and physical in-person training rooms. Includes maximum capacity meters, real-time waitlists, attendee registration/cancellation, and individual `.ics` invite generation.
+
+#### 2. Course Discussions & Social Q&A Hub (`/[role]/discussions`)
+* **Store:** `discussions-store.ts` (`lms-discussions-store`) | **File:** `src/app/[role]/discussions/page.tsx` (459 lines)
+* **Functionality:** Per-course and per-lesson discussion threads. Features community upvoting, instructor "Verified Answer" badges to endorse authoritative replies, moderator tools to pin threads to the top, mark issues as resolved, and delete content.
+
+#### 3. Curated Content Library (`/[role]/content-library`)
+* **Store:** `content-library-store.ts` (`lms-content-library-store`) | **File:** `src/app/[role]/content-library/page.tsx` (298 lines)
+* **Functionality:** Ready-to-deploy enterprise training modules with verified compliance certifications: **SOC 2 Type II**, **HIPAA**, **OSHA 1910**, **GDPR**, and **ISO 27001**. Includes 1-click "Import into {Organization}" that provisions active courses directly into `courses-store.ts`.
+
+#### 4. Learning Paths & Onboarding Journey Builder (`/[role]/learning-paths`)
+* **Store:** `learning-paths-store.ts` (`lms-learning-paths-store`) | **File:** `src/components/learning-paths/PathForm.tsx`
+* **Functionality:** Multi-step onboarding journey builder combining digital courses with operational task steps (e.g., developer workstation setup, I-9 compliance). Enforces strict sequential prerequisite unlocking (downstream steps unlock only upon prior step completion) with progress rollups.
+
+#### 5. Course Store & B2B Bulk Seat Licensing (`/[role]/course-store`)
+* **Store:** `courses-store.ts`, `approvals-store.ts` | **File:** `src/app/[role]/course-store/page.tsx`
+* **Functionality:** Commercial marketplace catalog with price filtering (Free/Paid), course landing page with dynamic syllabus accordion, "Request Access" approval flow dispatching to managers, and B2B bulk seat licensing with license key generation and CSV email allocation.
+
+#### 6. Groups & Automated Cohort Enrollment (`/[role]/groups`)
+* **Store:** `groups-store.ts` (`lms-groups-store`) | **File:** `src/components/groups/GroupForm.tsx`
+* **Functionality:** Supports both static user cohorts and dynamic rule-based groups matching user attributes (e.g. `department == "Engineering"`). Assigning courses to a group automatically provisions enrollments for all current and future members.
+
+#### 7. Multi-Tenant Organization Tree & Module Gating (`/[role]/organization`)
+* **Store:** `organizations-store.ts` (`lms-organizations-store`) | **File:** `src/app/[role]/organization/page.tsx`
+* **Functionality:** Super Admin multi-tenant hierarchy with nested parent-to-sub-org trees. Features `allowSubOrgs` permission gating and dynamic sidebar module gating (`enabledModules`) that removes disabled modules from the navigation rail in real time.
+
+#### 8. Manager Approval Inbox (`/[role]/approvals`)
+* **Store:** `approvals-store.ts` (`lms-approvals-store`) | **File:** `src/app/[role]/approvals/page.tsx`
+* **Functionality:** Dedicated inbox for People Managers and Org Admins to review and approve/deny training access and seat assignment requests submitted by direct reports, with automated notification dispatch.
+
+#### 9. Real-Time Notification Engine & Topbar Bell (`/[role]/notifications`)
+* **Store:** `notifications-store.ts` (`lms-notifications-store`) | **File:** `src/components/layout/NotificationBell.tsx`
+* **Functionality:** 7 core automated system triggers (course assignment, manager approval, approaching deadlines, certificate award, co-author requests). Includes global topbar `NotificationBell` with unread badge counter, slide-down drawer, and "Mark as Read".
+
+#### 10. SaaS Subscription & Storage Billing Portal (`/[role]/subscription`)
+* **Store:** `subscription-store.ts` (`lms-subscription-store`) | **File:** `src/app/[role]/subscription/page.tsx` (1,234 lines)
+* **Functionality:** Real-time seat capacity utilization meter (allocated vs license limit), cloud video storage meter (GB used vs limit), Starter/Pro/Enterprise tier upgrade modal, payment card management, and downloadable invoice history.
+
+#### 11. Interactive 4-View Academic & Training Calendar (`/[role]/calendar`)
+* **Store:** `calendar-store.ts` (`lms-calendar-store`) | **File:** `src/app/[role]/calendar/page.tsx` (1,436 lines)
+* **Functionality:** 4 interactive views: Month grid, Week schedule columns, Day hourly timeline, and Agenda list. Color-coded event taxonomy (Live Sessions, Deadlines, Office Hours, Exams), event scheduler, direct "Join Meeting" links, and bulk `.ics` calendar sync.
+
+#### 12. Digital Certificate Designer, Wallet & Bulk Issuance (`/[role]/certificates`)
+* **Store:** `certificates-store.ts` (`lms-certificates-store`) | **File:** `src/app/[role]/certificates/page.tsx` (566 lines)
+* **Functionality:** Learner credential wallet, visual Certificate Designer supporting 3 layout themes (Classic Academic, Modern Corporate, Minimalist Tech), print-optimized vector layout with verification hashes, and instructor bulk issuance.
+
+#### 13. User Profile, Security & Session Management (`/[role]/profile`)
+* **Store:** `auth-store.ts` | **File:** `src/app/[role]/profile/page.tsx` (496 lines)
+* **Functionality:** Personal profile editor, in-app password change with validation, Two-Factor Authentication (2FA) setup with QR code preview and TOTP verification, and active device sessions table with 1-click remote session revocation.
+
+#### 14. Advanced Enterprise Governance in Settings (`/[role]/settings`)
+* **Store:** `settings-store.ts` (`lms-settings-store`) | **File:** `src/app/[role]/settings/page.tsx`
+* **Functionality:**
+  - **Configurable Terminology (Glossary Override):** System-wide override allowing institutions to rename core nouns (e.g. "Course" → "Module", "Instructor" → "Faculty").
+  - **Dynamic Typography Selector:** Switch platform typography in real time across **Geist Sans**, **Inter**, **Roboto**, and **Outfit**.
+  - **Anti-Piracy Dynamic Video Watermarking:** Configurable moving semi-transparent watermark containing learner ID and timestamp across video playback.
+  - **Component-Level Access Control (RBAC) Builder:** Granular capability matrix to fine-tune UI component access per role.
+  - **Bulk CSV User Onboarding:** Batch user creation tool with downloadable template and validation summary.
+  - **White-Label Portal Branding:** Custom logos, CNAME domain mapping, and theme palette overrides.
+
+#### 15. Public Marketing Storefront & Direct Checkout Funnel (`/`)
+* **Files:** `src/app/page.tsx` (887 lines), `src/app/auth/signup/page.tsx`, `forgot-password/page.tsx`, `reset-password/page.tsx`
+* **Functionality:** Complete unauthenticated course storefront with syllabus preview modal, direct checkout routing (`/auth/login?courseId=...`), and 4-step self-service password recovery with live password strength calculation.
 
 ---
 
@@ -568,8 +686,9 @@ This section provides visual evidence of the **13 core implemented screens** wit
 
 ## 17. Mock Data & Simulated State Architecture
 
-To deliver an authentic click-through experience without external server dependencies, all state is managed using persistent, synchronized Zustand stores:
+To deliver an authentic click-through experience without external server dependencies, all state is managed using **19 persistent, synchronized Zustand stores** stored in browser `localStorage`:
 
+### 17.1 Core Baseline Stores (Open edX / Moodle Reference)
 1. **`auth-store.ts` (`lms-auth-store`):**  
    - Maintains active user identity, role, department, organization, MFA enrollment, and device trust expiry.
 2. **`courses-store.ts` (`lms-courses-store`):**  
@@ -582,6 +701,34 @@ To deliver an authentic click-through experience without external server depende
    - Holds the organization's user directory across Super Admin, Org Admin, Instructor, Learner, and Manager roles.
 6. **`categories-store.ts` (`lms-categories-store`):**  
    - Contains course categorization taxonomy with custom color swatches and active course counts.
+
+### 17.2 Additional Enterprise State Stores
+7. **`activity-log-store.ts` (`lms-activity-log-store`):**  
+   - Chronological audit stream recording user logins, course launches, lesson completions, and quiz attempts for institutional reports.
+8. **`approvals-store.ts` (`lms-approvals-store`):**  
+   - Tracks learner course access requests, seat petitions, status (`pending`, `approved`, `denied`), and manager decision notes.
+9. **`calendar-store.ts` (`lms-calendar-store`):**  
+   - Stores multi-type training calendar events, webinar links, dates, and full `.ics` calendar synchronization data.
+10. **`certificates-store.ts` (`lms-certificates-store`):**  
+    - Holds issued learner digital credentials, verification hashes, layout template themes, signatures, and revocation records.
+11. **`conferences-store.ts` (`lms-conferences-store`):**  
+    - Manages virtual (Zoom/Teams) and in-person ILT sessions, maximum seat limits, waitlists, and attendee registrations.
+12. **`content-library-store.ts` (`lms-content-library-store`):**  
+    - Curated off-the-shelf course catalog with SOC 2, HIPAA, OSHA, GDPR badges, versions, and 1-click org import actions.
+13. **`discussions-store.ts` (`lms-discussions-store`):**  
+    - Threaded social Q&A posts, replies, community upvotes, instructor verified answer badges, and moderation flags.
+14. **`groups-store.ts` (`lms-groups-store`):**  
+    - Static membership lists, dynamic attribute rules (department/role), and assigned course enrollment links.
+15. **`learning-paths-store.ts` (`lms-learning-paths-store`):**  
+    - Multi-step onboarding pathways, mixed course/task steps, and sequential prerequisite unlock states.
+16. **`notifications-store.ts` (`lms-notifications-store`):**  
+    - Automated system notification triggers, active inbox records, and topbar bell unread status tracking.
+17. **`organizations-store.ts` (`lms-organizations-store`):**  
+    - Hierarchical parent/sub-organization entities, `allowSubOrgs` permissions, and per-org `enabledModules` arrays.
+18. **`settings-store.ts` (`lms-settings-store`):**  
+    - System glossary terminology overrides, dynamic font family, video watermarking settings, and component RBAC matrix.
+19. **`subscription-store.ts` (`lms-subscription-store`):**  
+    - Enterprise plan tier, active seat usage meters, video cloud storage meters, and billing invoice history.
 
 ---
 
